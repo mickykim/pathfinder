@@ -16,6 +16,7 @@ export interface GridNode {
   visited: boolean;
   blocked: boolean;
   distance: number;
+  shortestPath: string[];
   id: string;
 }
 /**
@@ -67,6 +68,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
           target: false,
           visited: false,
           blocked: false,
+          shortestPath: [],
           distance: Number.MAX_SAFE_INTEGER,
           id: `node_${x}_${y}`,
         };
@@ -76,6 +78,76 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     }
     console.log({ tempGrid: tempGrid });
     return tempGrid;
+  };
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    const updatedGrid = grid.map((inner) => inner.slice());
+
+    const nodeLocation = event.currentTarget.id;
+    const nodeLocationElement = document.getElementById(nodeLocation);
+    const x = Number(nodeLocation.split("_")[1]);
+    const y = Number(nodeLocation.split("_")[2]);
+    switch (activeTool) {
+      case "start":
+        if (startLocation !== "") {
+          const prevX = Number(startLocation.split("_")[1]);
+          const prevY = Number(startLocation.split("_")[2]);
+          updatedGrid[prevX][prevY].start = false;
+          updatedGrid[prevX][prevY].distance = Number.MAX_SAFE_INTEGER;
+        }
+        updatedGrid[x][y].start = true;
+        updatedGrid[x][y].distance = 0;
+        updatedGrid[x][y].target = false;
+        updatedGrid[x][y].blocked = false;
+        setStartLocation(nodeLocation);
+        setGrid(updatedGrid);
+        console.count("start placed");
+        break;
+
+      case "target":
+        if (targetLocation !== "") {
+          const prevX = Number(targetLocation.split("_")[1]);
+          const prevY = Number(targetLocation.split("_")[2]);
+          console.log(prevX, prevY);
+          updatedGrid[prevX][prevY].target = false;
+        }
+        setTargetLocation(nodeLocation);
+        updatedGrid[x][y].target = true;
+        updatedGrid[x][y].start = false;
+        updatedGrid[x][y].blocked = false;
+        updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
+        setGrid(updatedGrid);
+        console.count("target placed");
+        break;
+
+      case "wall":
+        updatedGrid[x][y].target = false;
+        updatedGrid[x][y].start = false;
+        updatedGrid[x][y].blocked = true;
+        updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
+        setGrid(updatedGrid);
+        console.count("wall placed");
+        break;
+      case "eraser":
+        updatedGrid[x][y].target = false;
+        updatedGrid[x][y].start = false;
+        updatedGrid[x][y].blocked = false;
+        updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
+        console.count("deleted node");
+        break;
+
+      default:
+        break;
+    }
+  };
+  /**
+   * Mouse drag event handler depending on current active tool.
+   * Handles wall placement and erasing to work while dragging
+   * @param event Mouse event
+   * @returns
+   */
+  const handleDrag = (event: React.MouseEvent<HTMLElement>) => {
+    if (!mouseDown) return; // Check that user is dragging
+    handleClick(event);
   };
 
   /**
@@ -120,86 +192,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
         let row: ReactElement[] = [];
         const rowId = `row_${x}`;
         for (let y = 0; y < grid[x].length; y++) {
-          const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-            const updatedGrid = grid.map((inner) => inner.slice());
-
-            const nodeLocation = `node_${x}_${y}`;
-            switch (activeTool) {
-              case "start":
-                if (startLocation !== "") {
-                  const prevX = Number(startLocation.split("_")[1]);
-                  const prevY = Number(startLocation.split("_")[2]);
-                  updatedGrid[prevX][prevY].start = false;
-                  updatedGrid[prevX][prevY].distance = Number.MAX_SAFE_INTEGER;
-                }
-                setStartLocation(nodeLocation);
-                updatedGrid[x][y].start = true;
-                updatedGrid[x][y].distance = 0;
-                updatedGrid[x][y].target = false;
-                updatedGrid[x][y].blocked = false;
-                setGrid(updatedGrid);
-                break;
-
-              case "target":
-                if (targetLocation !== "") {
-                  const prevX = Number(targetLocation.split("_")[1]);
-                  const prevY = Number(targetLocation.split("_")[2]);
-                  console.log(prevX, prevY);
-                  updatedGrid[prevX][prevY].target = false;
-                }
-                setTargetLocation(nodeLocation);
-                updatedGrid[x][y].target = true;
-                updatedGrid[x][y].start = false;
-                updatedGrid[x][y].blocked = false;
-                updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-                setGrid(updatedGrid);
-                break;
-
-              case "wall":
-                updatedGrid[x][y].target = false;
-                updatedGrid[x][y].start = false;
-                updatedGrid[x][y].blocked = true;
-                updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-                setGrid(updatedGrid);
-                break;
-              case "eraser":
-                updatedGrid[x][y].target = false;
-                updatedGrid[x][y].start = false;
-                updatedGrid[x][y].blocked = false;
-                updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-                break;
-
-              default:
-                break;
-            }
-          };
-
-          /**
-           * Mouse drag event handler depending on current active tool.
-           * Handles wall placement and erasing to work while dragging
-           * @param event Mouse event
-           * @returns
-           */
-          const handleDrag = (event: React.MouseEvent<HTMLElement>) => {
-            if (!mouseDown) return; // Check that user is dragging
-
-            const updatedGrid = grid.map((inner) => inner.slice());
-            if (activeTool === "wall") {
-              updatedGrid[x][y].target = false;
-              updatedGrid[x][y].start = false;
-              updatedGrid[x][y].blocked = true;
-              updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-            }
-            if (activeTool === "eraser") {
-              updatedGrid[x][y].target = false;
-              updatedGrid[x][y].start = false;
-              updatedGrid[x][y].blocked = false;
-              updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-            }
-
-            setGrid(updatedGrid);
-          };
-
           // Create GridNode element with the corresponding data for the specific node
           let GridNodeElement: JSX.Element = (
             <GridNode
