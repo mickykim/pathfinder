@@ -9,6 +9,8 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   while (!done) {
     if (grid[x][y].visited) {
     }
+    grid[x][y].visited = true;
+
 
     /**
      * Checks if the node is out of bounds or already visited.
@@ -28,15 +30,17 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
         ) {
           grid[x + xOffsets[i]][y + yOffsets[i]].distance =
             grid[x][y].distance + 1;
-          grid[x + xOffsets[i]][y + yOffsets[i]].shortestPath = [
+          grid[x + xOffsets[i]][y + yOffsets[i]].shortestPath = [9
             ...grid[x][y].shortestPath,
             grid[x][y].id,
           ];
         }
       }
     }
-    grid[x][y].visited = true;
-  }
+    // Find node with smallest distance from source to choose as next node
+    for (let i = 0; i < 4; i++) {
+
+    }
 };
 
 export const astar = () => {};
