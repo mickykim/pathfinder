@@ -16,7 +16,8 @@ export interface GridNode {
   visited: boolean;
   blocked: boolean;
   distance: number;
-  shortestPath: string[];
+  targetPath: boolean;
+  shortestPath: GridNode | null;
   id: string;
 }
 /**
@@ -37,10 +38,11 @@ interface PropTypes {
  */
 const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
   const canvasWrapper = useRef<HTMLDivElement>(null);
-  const [grid, setGrid] = useState<GridNode[][]>([[]]);
+  const [grid, setGrid] = useState<GridNode[][]>();
   const [gridElement, setGridElement] = useState<ReactElement>();
   const [startLocation, setStartLocation] = useState<string>("");
   const [targetLocation, setTargetLocation] = useState<string>("");
+  const [targetNode, setTargetNode] = useState<GridNode>();
   const [mouseDown, setMouseDown] = useState<boolean>(false);
 
   /**
@@ -68,7 +70,8 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
           target: false,
           visited: false,
           blocked: false,
-          shortestPath: [],
+          shortestPath: null,
+          targetPath: false,
           distance: Number.MAX_SAFE_INTEGER,
           id: `node_${x}_${y}`,
         };
@@ -79,7 +82,53 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     console.log({ tempGrid: tempGrid });
     return tempGrid;
   };
+
+  const drawGrid = () => {
+    if (!grid) return;
+    if (!canvasWrapper.current) throw new Error("Failed to load canvasWrapper");
+    const canvas = [];
+    for (let x = 0; x < grid.length; x++) {
+      let row: ReactElement[] = [];
+      const rowId = `row_${x}`;
+      for (let y = 0; y < grid[x].length; y++) {
+        // Create GridNode element with the corresponding data for the specific node
+        let GridNodeElement: JSX.Element = (
+          <GridNode
+            key={`node_${x}_${y}`}
+            x={x}
+            y={y}
+            target={grid[x][y].target}
+            start={grid[x][y].start}
+            blocked={grid[x][y].blocked}
+            visited={grid[x][y].visited}
+            targetPath={grid[x][y].targetPath}
+            activeTool={activeTool}
+            handleClick={handleClick}
+            handleDrag={handleDrag}
+          ></GridNode>
+        );
+        row.push(GridNodeElement);
+      }
+
+      let rowElement = (
+        <div className="flex h-full w-full flex-nowrap" key={rowId}>
+          {row.map((child) => {
+            return child;
+          })}
+        </div>
+      );
+      canvas.push(rowElement);
+    }
+    const canvasElement = (
+      <div className="flex h-full select-none flex-col bg-slate-300">
+        {canvas.map((child) => child)}
+      </div>
+    );
+    return canvasElement;
+  };
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (!grid) return;
     const updatedGrid = grid.map((inner) => inner.slice());
 
     const nodeLocation = event.currentTarget.id;
@@ -111,6 +160,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
           updatedGrid[prevX][prevY].target = false;
         }
         setTargetLocation(nodeLocation);
+        setTargetNode(updatedGrid[x][y]);
         updatedGrid[x][y].target = true;
         updatedGrid[x][y].start = false;
         updatedGrid[x][y].blocked = false;
@@ -150,6 +200,11 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     handleClick(event);
   };
 
+  const createPath = (node: GridNode) => {
+    if (node.shortestPath === null) return;
+    node.shortestPath.targetPath = true;
+    createPath(node.shortestPath);
+  };
   /**
    * Initial setup when component is mounted
    * Add event listener to mousedown and mouseup to check if user is dragging
@@ -169,6 +224,9 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    */
   useEffect(() => {
     setGrid(createGrid(25));
+    setStartLocation("");
+    setTargetLocation("");
+    setTargetNode(undefined);
     console.log("Grid reset finalized");
   }, [resetGrid]);
 
@@ -176,7 +234,10 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    * Run algorithm when user presses run button
    */
   useEffect(() => {
-    dijkstras(grid);
+    if (!grid || !targetNode || startLocation == "") return;
+    dijkstras(grid, startLocation, setGrid);
+    createPath(targetNode);
+    setGridElement(drawGrid());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);
 
@@ -184,48 +245,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    * Redraw grid to respond to user action.
    */
   useEffect(() => {
-    const drawGrid = () => {
-      if (!canvasWrapper.current)
-        throw new Error("Failed to load canvasWrapper");
-      const canvas = [];
-      for (let x = 0; x < grid.length; x++) {
-        let row: ReactElement[] = [];
-        const rowId = `row_${x}`;
-        for (let y = 0; y < grid[x].length; y++) {
-          // Create GridNode element with the corresponding data for the specific node
-          let GridNodeElement: JSX.Element = (
-            <GridNode
-              key={`node_${x}_${y}`}
-              x={x}
-              y={y}
-              target={grid[x][y].target}
-              start={grid[x][y].start}
-              blocked={grid[x][y].blocked}
-              visited={grid[x][y].visited}
-              activeTool={activeTool}
-              handleClick={handleClick}
-              handleDrag={handleDrag}
-            ></GridNode>
-          );
-          row.push(GridNodeElement);
-        }
-
-        let rowElement = (
-          <div className="flex h-full w-full flex-nowrap" key={rowId}>
-            {row.map((child) => {
-              return child;
-            })}
-          </div>
-        );
-        canvas.push(rowElement);
-      }
-      const canvasElement = (
-        <div className="flex h-full select-none flex-col bg-slate-300">
-          {canvas.map((child) => child)}
-        </div>
-      );
-      return canvasElement;
-    };
     setGridElement(drawGrid());
   }, [grid, startLocation, targetLocation, activeTool, mouseDown]);
 

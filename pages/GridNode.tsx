@@ -8,6 +8,7 @@ interface propTypes {
   activeTool: string;
   blocked: boolean;
   visited: boolean;
+  targetPath: boolean;
   handleDrag: React.MouseEventHandler<HTMLDivElement>;
   handleClick: React.MouseEventHandler<HTMLElement>;
 }
@@ -20,6 +21,7 @@ const GridNode = ({
   blocked,
   visited,
   activeTool,
+  targetPath,
   handleDrag,
   handleClick,
 }: propTypes) => {
@@ -86,6 +88,31 @@ const GridNode = ({
       ></div>
     );
   }
+  if (targetPath) {
+    return (
+      <div
+        key={nodeLocation}
+        id={nodeLocation}
+        className={`h-full w-full bg-purple-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        onMouseOver={handleDrag}
+        onMouseDown={handleClick}
+        draggable="false"
+      ></div>
+    );
+  }
+  if (visited) {
+    return (
+      <div
+        key={nodeLocation}
+        id={nodeLocation}
+        className={`h-full w-full bg-yellow-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        onMouseOver={handleDrag}
+        onMouseDown={handleClick}
+        draggable="false"
+      ></div>
+    );
+  }
+
   /** Default (empty) Node depending on current active tool*/
 
   return (
