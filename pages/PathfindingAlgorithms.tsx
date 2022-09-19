@@ -4,7 +4,8 @@ import { GridNode } from "./PathfinderGrid";
 export const dijkstras = (
   grid: GridNode[][],
   startLocation: string,
-  setGrid: any
+  setGrid: any,
+  drawGrid: any
 ) => {
   const updatedGrid = grid.map((inner) => inner.slice());
 
@@ -56,7 +57,6 @@ export const dijkstras = (
         }
       }
     }
-    setGrid(updatedGrid);
   }
   return updatedGrid;
 };
