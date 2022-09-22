@@ -1,12 +1,7 @@
 import { arrayBuffer } from "stream/consumers";
 import { GridNode } from "./PathfinderGrid";
 
-export const dijkstras = (
-  grid: GridNode[][],
-  startLocation: string,
-  setGrid: any,
-  drawGrid: any
-) => {
+export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   const updatedGrid = grid.map((inner) => inner.slice());
 
   let startX = Number(startLocation.split("_")[1]);
@@ -20,6 +15,8 @@ export const dijkstras = (
     if (updatedGrid[x][y].target === true) {
       break;
     }
+    const nodeElement = document.getElementById(startLocation);
+    // nodeElement?.classList.add("bg-yellow-700");
     updatedGrid[x][y].visited = true;
 
     /**
