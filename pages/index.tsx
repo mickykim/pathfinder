@@ -42,7 +42,7 @@ const Home: NextPage = () => {
   };
   const displayInfoModal = () => {};
   return (
-    <div className=" bg-slate-700">
+    <div className=" bg-slate-300">
       <Head>
         <title>Pathfinder</title>
         <meta name="description" content="Pathfinding algorithm visualizer" />

@@ -89,10 +89,37 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
   const animationFinished = useRef<boolean>(false);
   const mouseDown = useRef<boolean>(false);
   const shortestPath = useRef<GridNode[]>([]);
+  const unvisitedGrid = useRef<GridNode[][]>([]);
+
+  const runDijkstra = useCallback(() => {
+    if (!grid || targetLocation == "" || startLocation == "") return;
+    //Algorithm has been run at least once beforehand
+    if (
+      animationStarted.current === false &&
+      animationFinished.current === true
+    ) {
+      timeline.current = dijkstras(unvisitedGrid.current, startLocation);
+      animationFinished.current = false;
+      animationStarted.current = true;
+      setGrid(
+        unvisitedGrid.current.map((inner) => {
+          return inner.map((node) => {
+            return { ...node };
+          });
+        })
+      );
+    } else {
+      timeline.current = dijkstras(grid, startLocation);
+      animationStarted.current = true;
+      setGrid([...grid]);
+    }
+  }, [grid, targetLocation, startLocation]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
       let updateNode = (event: React.MouseEvent<HTMLElement>) => {
+        if (animationStarted.current) return;
+
         const nodeLocation = event.currentTarget.id;
         const x = Number(nodeLocation.split("_")[1]);
         const y = Number(nodeLocation.split("_")[2]);
@@ -108,17 +135,29 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                 let prevStartNode: GridNode = {
                   ...updatedGrid[prevX][prevY],
                   start: false,
+                  targetPath: false,
+
                   distance: Number.MAX_SAFE_INTEGER,
                 };
-                updatedGrid[prevX][prevY] = prevStartNode;
                 let newNode: GridNode = {
                   ...updatedGrid[x][y],
                   start: true,
                   distance: 0,
                   target: false,
                   blocked: false,
+                  targetPath: false,
                 };
 
+                unvisitedGrid.current[prevX][prevY] = {
+                  ...prevStartNode,
+                  visited: false,
+                };
+                unvisitedGrid.current[x][y] = {
+                  ...newNode,
+                  visited: false,
+                };
+
+                updatedGrid[prevX][prevY] = prevStartNode;
                 updatedGrid[x][y] = newNode;
                 return updatedGrid;
               });
@@ -134,6 +173,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                   target: false,
                   blocked: false,
                 };
+                unvisitedGrid.current[x][y] = { ...newNode };
 
                 updatedGrid[x][y] = newNode;
                 return updatedGrid;
@@ -148,6 +188,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             if (targetLocation !== "") {
               const prevX = Number(targetLocation.split("_")[1]);
               const prevY = Number(targetLocation.split("_")[2]);
+
               setGrid((prevGrid) => {
                 let updatedGrid = prevGrid.map((inner) => {
                   return inner.slice();
@@ -157,16 +198,26 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                   target: false,
                   distance: Number.MAX_SAFE_INTEGER,
                 };
-                updatedGrid[prevX][prevY] = prevTargetNode;
                 let newNode: GridNode = {
                   ...updatedGrid[x][y],
                   start: false,
-                  distance: Number.MAX_SAFE_INTEGER,
                   target: true,
+                  distance: Number.MAX_SAFE_INTEGER,
+
                   blocked: false,
                 };
 
+                unvisitedGrid.current[prevX][prevY] = {
+                  ...prevTargetNode,
+                  visited: false,
+                };
+                unvisitedGrid.current[x][y] = {
+                  ...newNode,
+                  visited: false,
+                };
+                updatedGrid[prevX][prevY] = prevTargetNode;
                 updatedGrid[x][y] = newNode;
+
                 return updatedGrid;
               });
             } else {
@@ -183,6 +234,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                   blocked: false,
                 };
 
+                unvisitedGrid.current[x][y] = { ...newNode, visited: false };
                 updatedGrid[x][y] = newNode;
                 return updatedGrid;
               });
@@ -204,6 +256,8 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                 target: false,
                 blocked: true,
               };
+              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+
               updatedGrid[x][y] = newNode;
               return updatedGrid;
             });
@@ -222,6 +276,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
                 target: false,
                 blocked: false,
               };
+              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
               updatedGrid[x][y] = newNode;
               return updatedGrid;
@@ -318,26 +373,36 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     document.addEventListener("mouseup", () => {
       mouseDown.current = false;
     });
+    unvisitedGrid.current = grid.map((inner) =>
+      inner.map((node) => {
+        return { ...node };
+      })
+    );
   }, []);
 
   /**
-   * Handles grid reset when reset is initiated
+   * Handles grid reset when reset is initiated.
+   * Reset is executed inside a timeout in order to wait until the current frame is rendered before resetting.
    */
   useEffect(() => {
-    setGrid(createGrid(1700, 800, 25));
-    setStartLocation("");
-    setTargetLocation("");
-    console.log("Grid reset finalized");
-  }, [resetGrid, createGrid]);
+    setTimeout(() => {
+      setStartLocation("");
+      setTargetLocation("");
+      timeline.current = [];
+      animationFinished.current = false;
+      animationStarted.current = false;
+      setGrid(createGrid(1700, 800, 25));
+
+      console.log("Grid reset finalized");
+    }, frameDuration);
+  }, [resetGrid, createGrid, frameDuration]);
 
   /**
    * Run algorithm when user presses run button
    */
+
   useEffect(() => {
-    if (!grid || targetLocation == "" || startLocation == "") return;
-    timeline.current = dijkstras(grid, startLocation);
-    animationStarted.current = true;
-    setGrid([...grid]);
+    runDijkstra();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);
 
@@ -347,23 +412,44 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     let y = Number(targetLocation.split("_")[2]);
     let updatedGrid = grid.map((inner) => inner.slice());
     let currentNode = updatedGrid[x][y];
+    animationStarted.current = true;
+    animationFinished.current = true;
 
     while (currentNode.shortestPath !== null) {
       const pathNode = { ...currentNode.shortestPath, targetPath: true };
-      currentNode = currentNode.shortestPath;
       shortestPath.current.push(pathNode);
+      currentNode = currentNode.shortestPath;
     }
+    console.log(shortestPath.current);
     setGrid(updatedGrid);
+    console.log("path created");
   }, [grid, targetLocation]);
-  //Run timeline
+
+  // Recreate path only if target location changes and new location is in a visited node.
   useEffect(() => {
+    if (targetLocation == "") return;
+
+    grid.forEach((inner) => {
+      inner.forEach((node) => {
+        node.targetPath = false;
+      });
+    });
+    const x = Number(targetLocation.split("_")[1]);
+    const y = Number(targetLocation.split("_")[2]);
+    let currentNode = grid[x][y];
+    if (currentNode.shortestPath !== null) {
+      createPath();
+    } else if (animationFinished.current) runDijkstra();
+  }, [targetLocation]);
+
+  //Run timeline and create shortest path from target.
+  useEffect(() => {
+    // Check if the run button was executed and whether all visited nodes have been rendered.
     if (animationStarted.current && animationFinished.current) {
       if (shortestPath.current.length === 0) {
-        console.log("poop");
-        animationFinished.current = false;
+        animationStarted.current = false;
         return;
       }
-      console.log("pee");
       let pathNode = shortestPath.current.pop();
       setTimeout(
         () =>
@@ -371,7 +457,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             let updatedGrid = prevGrid.map((inner) => {
               return inner.slice();
             });
-            if (pathNode === undefined) return updatedGrid;
+            if (pathNode === undefined) return prevGrid;
 
             updatedGrid[pathNode.x][pathNode.y] = pathNode;
             return updatedGrid;
@@ -379,7 +465,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
         frameDuration * 2
       );
     } else if (animationStarted.current && timeline.current.length == 0) {
-      animationFinished.current = true;
       createPath();
     } else if (animationStarted.current) {
       let currentNode = timeline.current.shift();

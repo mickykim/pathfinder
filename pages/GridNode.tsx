@@ -26,9 +26,9 @@ const GridNode = ({
   handleClick,
 }: propTypes) => {
   const nodeLocation = `node_${x}_${y}`;
-  const startIcon = "hover:bg-green-500";
-  const targetIcon = "hover:bg-red-500";
-  const wallIcon = "hover:bg-slate-800";
+  const startIcon = "hover:bg-sky-500 hover:animate-pulse-slow";
+  const targetIcon = "hover:bg-red-500 hover:animate-pulse-slow";
+  const wallIcon = "hover:bg-slate-800 hover:animate-pulse-slow";
   const [hoverIcon, setHoverIcon] = useState("");
   const node = useRef(null);
 
@@ -53,7 +53,7 @@ const GridNode = ({
         ref={node}
         key={nodeLocation}
         id={nodeLocation}
-        className={`h-full w-full bg-green-600 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full border border-slate-100 bg-sky-500 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
@@ -68,7 +68,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={`h-full w-full bg-red-600 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full border border-slate-100 bg-red-500 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
@@ -83,7 +83,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={`h-full w-full bg-slate-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full border border-slate-100 bg-slate-700 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
@@ -95,7 +95,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={`h-full w-full bg-purple-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full animate-circle border border-slate-100 bg-green-500 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
@@ -107,7 +107,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={`h-full w-full bg-yellow-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full animate-visited border border-slate-100 bg-yellow-500 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
@@ -121,7 +121,7 @@ const GridNode = ({
     <div
       key={nodeLocation}
       id={nodeLocation}
-      className={`h-full w-full outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
+      className={` h-full w-full border border-slate-100 transition-colors duration-75 ${hoverIcon}`}
       onMouseEnter={handleDrag}
       onClick={handleClick}
       draggable="false"
