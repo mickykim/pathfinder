@@ -1,5 +1,5 @@
 import { defaultConfig } from "next/dist/server/config-shared";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo, useRef } from "react";
 interface propTypes {
   x: number;
   y: number;
@@ -30,6 +30,7 @@ const GridNode = ({
   const targetIcon = "hover:bg-red-500";
   const wallIcon = "hover:bg-slate-800";
   const [hoverIcon, setHoverIcon] = useState("");
+  const node = useRef(null);
 
   useEffect(() => {
     setHoverIcon(
@@ -49,11 +50,12 @@ const GridNode = ({
   if (start) {
     return (
       <div
+        ref={node}
         key={nodeLocation}
         id={nodeLocation}
         className={`h-full w-full bg-green-600 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-        onMouseOver={handleDrag}
-        onMouseDown={handleClick}
+        onMouseEnter={handleDrag}
+        onClick={handleClick}
         draggable="false"
       ></div>
     );
@@ -67,8 +69,8 @@ const GridNode = ({
         key={nodeLocation}
         id={nodeLocation}
         className={`h-full w-full bg-red-600 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-        onMouseOver={handleDrag}
-        onMouseDown={handleClick}
+        onMouseEnter={handleDrag}
+        onClick={handleClick}
         draggable="false"
       ></div>
     );
@@ -82,8 +84,8 @@ const GridNode = ({
         key={nodeLocation}
         id={nodeLocation}
         className={`h-full w-full bg-slate-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-        onMouseOver={handleDrag}
-        onMouseDown={handleClick}
+        onMouseEnter={handleDrag}
+        onClick={handleClick}
         draggable="false"
       ></div>
     );
@@ -94,8 +96,8 @@ const GridNode = ({
         key={nodeLocation}
         id={nodeLocation}
         className={`h-full w-full bg-purple-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-        onMouseOver={handleDrag}
-        onMouseDown={handleClick}
+        onMouseEnter={handleDrag}
+        onClick={handleClick}
         draggable="false"
       ></div>
     );
@@ -106,25 +108,25 @@ const GridNode = ({
         key={nodeLocation}
         id={nodeLocation}
         className={`h-full w-full bg-yellow-700 outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-        onMouseOver={handleDrag}
-        onMouseDown={handleClick}
+        onMouseEnter={handleDrag}
+        onClick={handleClick}
         draggable="false"
       ></div>
     );
   }
 
   /** Default (empty) Node depending on current active tool*/
-
+  // console.count("default render");
   return (
     <div
       key={nodeLocation}
       id={nodeLocation}
       className={`h-full w-full outline outline-1 outline-slate-400 transition-colors duration-75 ${hoverIcon}`}
-      onMouseOver={handleDrag}
-      onMouseDown={handleClick}
+      onMouseEnter={handleDrag}
+      onClick={handleClick}
       draggable="false"
     ></div>
   );
 };
 
-export default GridNode;
+export default memo(GridNode);

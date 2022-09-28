@@ -1,7 +1,9 @@
+import { time } from "console";
 import React, {
   ReactElement,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -22,6 +24,8 @@ export interface GridNode {
   visited: boolean;
   blocked: boolean;
   distance: number;
+  x: number;
+  y: number;
   targetPath: boolean;
   shortestPath: GridNode | null;
   id: string;
@@ -43,57 +47,52 @@ interface PropTypes {
  * @returns
  */
 const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
-  const canvasWrapper = useRef<HTMLDivElement>(null);
-  const [grid, setGrid] = useState<GridNode[][]>();
-  const [gridElement, setGridElement] = useState<ReactElement>();
-  const [startLocation, setStartLocation] = useState<string>("");
-  const [targetLocation, setTargetLocation] = useState<string>("");
-  const [targetNode, setTargetNode] = useState<GridNode>();
-  const [mouseDown, setMouseDown] = useState<boolean>(false);
-
   /**
    * Initializes and creates a GridNode double array that represents the state of every node in the graph.
    * @param squareSize size of grid node square
    * @returns Grid data double array
    */
-  const createGrid = (squareSize: number) => {
-    if (!canvasWrapper.current)
-      throw new Error("Failed to select canvasWrapper");
-    let tempGrid: GridNode[][] = [];
-    for (
-      let x = 0;
-      x < Math.floor(canvasWrapper.current.offsetHeight / squareSize);
-      x++
-    ) {
-      let row: GridNode[] = [];
-      for (
-        let y = 0;
-        y < Math.floor(canvasWrapper.current.offsetWidth / squareSize);
-        y++
-      ) {
-        let gridNodeState: GridNode = {
-          start: false,
-          target: false,
-          visited: false,
-          blocked: false,
-          shortestPath: null,
-          targetPath: false,
-          distance: Number.MAX_SAFE_INTEGER,
-          id: `node_${x}_${y}`,
-        };
-        row.push(gridNodeState);
+  const createGrid = useCallback(
+    (gridWidth: number, gridHeight: number, squareSize: number) => {
+      let tempGrid: GridNode[][] = [];
+      for (let x = 0; x < Math.floor(gridHeight / squareSize); x++) {
+        let row: GridNode[] = [];
+        for (let y = 0; y < Math.floor(gridWidth / squareSize); y++) {
+          let gridNodeState: GridNode = {
+            start: false,
+            target: false,
+            visited: false,
+            blocked: false,
+            shortestPath: null,
+            targetPath: false,
+            x: x,
+            y: y,
+            distance: Number.MAX_SAFE_INTEGER,
+            id: `node_${x}_${y}`,
+          };
+          row.push(gridNodeState);
+        }
+        tempGrid.push(row);
       }
-      tempGrid.push(row);
-    }
-    console.log({ tempGrid: tempGrid });
-    return tempGrid;
-  };
+      console.log("grid created");
+      return tempGrid;
+    },
+    []
+  );
+  const canvasWrapper = useRef<HTMLDivElement>(null);
+  const [grid, setGrid] = useState<GridNode[][]>(createGrid(1700, 800, 25));
+  const [startLocation, setStartLocation] = useState<string>("");
+  const [targetLocation, setTargetLocation] = useState<string>("");
+  const [frameDuration] = useState(5);
+  const timeline = useRef<GridNode[]>([]);
+  const animationStarted = useRef<boolean>(false);
+  const animationFinished = useRef<boolean>(false);
+  const mouseDown = useRef<boolean>(false);
+  const shortestPath = useRef<GridNode[]>([]);
+
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
       let updateNode = (event: React.MouseEvent<HTMLElement>) => {
-        if (!grid) return;
-        const updatedGrid = grid.map((inner) => inner.slice());
-
         const nodeLocation = event.currentTarget.id;
         const x = Number(nodeLocation.split("_")[1]);
         const y = Number(nodeLocation.split("_")[2]);
@@ -102,15 +101,46 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             if (startLocation !== "") {
               const prevX = Number(startLocation.split("_")[1]);
               const prevY = Number(startLocation.split("_")[2]);
-              updatedGrid[prevX][prevY].start = false;
-              updatedGrid[prevX][prevY].distance = Number.MAX_SAFE_INTEGER;
+              setGrid((prevGrid) => {
+                let updatedGrid = prevGrid.map((inner) => {
+                  return inner.slice();
+                });
+                let prevStartNode: GridNode = {
+                  ...updatedGrid[prevX][prevY],
+                  start: false,
+                  distance: Number.MAX_SAFE_INTEGER,
+                };
+                updatedGrid[prevX][prevY] = prevStartNode;
+                let newNode: GridNode = {
+                  ...updatedGrid[x][y],
+                  start: true,
+                  distance: 0,
+                  target: false,
+                  blocked: false,
+                };
+
+                updatedGrid[x][y] = newNode;
+                return updatedGrid;
+              });
+            } else {
+              setGrid((prevGrid) => {
+                let updatedGrid = prevGrid.map((inner) => {
+                  return inner.slice();
+                });
+                let newNode: GridNode = {
+                  ...updatedGrid[x][y],
+                  start: true,
+                  distance: 0,
+                  target: false,
+                  blocked: false,
+                };
+
+                updatedGrid[x][y] = newNode;
+                return updatedGrid;
+              });
             }
-            updatedGrid[x][y].start = true;
-            updatedGrid[x][y].distance = 0;
-            updatedGrid[x][y].target = false;
-            updatedGrid[x][y].blocked = false;
+
             setStartLocation(nodeLocation);
-            setGrid(updatedGrid);
             console.count("start placed");
             break;
 
@@ -118,32 +148,84 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             if (targetLocation !== "") {
               const prevX = Number(targetLocation.split("_")[1]);
               const prevY = Number(targetLocation.split("_")[2]);
-              console.log(prevX, prevY);
-              updatedGrid[prevX][prevY].target = false;
+              setGrid((prevGrid) => {
+                let updatedGrid = prevGrid.map((inner) => {
+                  return inner.slice();
+                });
+                let prevTargetNode: GridNode = {
+                  ...updatedGrid[prevX][prevY],
+                  target: false,
+                  distance: Number.MAX_SAFE_INTEGER,
+                };
+                updatedGrid[prevX][prevY] = prevTargetNode;
+                let newNode: GridNode = {
+                  ...updatedGrid[x][y],
+                  start: false,
+                  distance: Number.MAX_SAFE_INTEGER,
+                  target: true,
+                  blocked: false,
+                };
+
+                updatedGrid[x][y] = newNode;
+                return updatedGrid;
+              });
+            } else {
+              setGrid((prevGrid) => {
+                let updatedGrid = prevGrid.map((inner) => {
+                  return inner.slice();
+                });
+
+                let newNode: GridNode = {
+                  ...updatedGrid[x][y],
+                  start: false,
+                  distance: Number.MAX_SAFE_INTEGER,
+                  target: true,
+                  blocked: false,
+                };
+
+                updatedGrid[x][y] = newNode;
+                return updatedGrid;
+              });
             }
             setTargetLocation(nodeLocation);
-            setTargetNode(updatedGrid[x][y]);
-            updatedGrid[x][y].target = true;
-            updatedGrid[x][y].start = false;
-            updatedGrid[x][y].blocked = false;
-            updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-            setGrid(updatedGrid);
             console.count("target placed");
             break;
 
           case "wall":
-            updatedGrid[x][y].target = false;
-            updatedGrid[x][y].start = false;
-            updatedGrid[x][y].blocked = true;
-            updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
-            setGrid(updatedGrid);
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: false,
+                distance: Number.MAX_SAFE_INTEGER,
+                target: false,
+                blocked: true,
+              };
+              updatedGrid[x][y] = newNode;
+              return updatedGrid;
+            });
             console.count("wall placed");
             break;
           case "eraser":
-            updatedGrid[x][y].target = false;
-            updatedGrid[x][y].start = false;
-            updatedGrid[x][y].blocked = false;
-            updatedGrid[x][y].distance = Number.MAX_SAFE_INTEGER;
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: false,
+                distance: Number.MAX_SAFE_INTEGER,
+                target: false,
+                blocked: false,
+              };
+
+              updatedGrid[x][y] = newNode;
+              return updatedGrid;
+            });
             console.count("deleted node");
             break;
 
@@ -153,7 +235,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
       };
       updateNode(event);
     },
-    [activeTool, grid, startLocation, targetLocation]
+    [activeTool, startLocation, targetLocation]
   );
 
   /**
@@ -165,83 +247,76 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
   const handleDrag = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
       let dragNode = (event: React.MouseEvent<HTMLElement>) => {
-        if (!mouseDown || (activeTool !== "wall" && activeTool !== "eraser"))
+        if (
+          !mouseDown.current ||
+          (activeTool !== "wall" && activeTool !== "eraser")
+        )
           return; // Check that user is dragging
         handleClick(event);
       };
       dragNode(event);
     },
-    [activeTool, handleClick, mouseDown]
+    [activeTool, handleClick]
   );
 
-  const drawGrid = useCallback(
-    (grid: GridNode[][]) => {
-      let paintGrid = (grid: GridNode[][]) => {
-        console.log("drawing grid");
-        if (!grid) return;
-        if (!canvasWrapper.current)
-          throw new Error("Failed to load canvasWrapper");
-        const canvas = [];
-        for (let x = 0; x < grid.length; x++) {
-          let row: ReactElement[] = [];
-          const rowId = `row_${x}`;
-          for (let y = 0; y < grid[x].length; y++) {
-            // Create GridNode element with the corresponding data for the specific node
-            let GridNodeElement: JSX.Element = (
-              <GridNode
-                key={`node_${x}_${y}`}
-                x={x}
-                y={y}
-                target={grid[x][y].target}
-                start={grid[x][y].start}
-                blocked={grid[x][y].blocked}
-                visited={grid[x][y].visited}
-                targetPath={grid[x][y].targetPath}
-                activeTool={activeTool}
-                handleClick={handleClick}
-                handleDrag={handleDrag}
-              ></GridNode>
-            );
-            row.push(GridNodeElement);
-          }
+  const gridElement = useMemo(() => {
+    let paintGrid = (grid: GridNode[][]) => {
+      console.log("drawing grid");
+      if (!grid) return;
 
-          let rowElement = (
-            <div className="flex h-full w-full flex-nowrap" key={rowId}>
-              {row.map((child) => {
-                return child;
-              })}
-            </div>
+      const canvas = [];
+      for (let x = 0; x < grid.length; x++) {
+        let row: ReactElement[] = [];
+        const rowId = `row_${x}`;
+        for (let y = 0; y < grid[x].length; y++) {
+          // Create GridNode element with the corresponding data for the specific node
+          let GridNodeElement: JSX.Element = (
+            <GridNode
+              key={`node_${x}_${y}`}
+              x={grid[x][y].x}
+              y={grid[x][y].y}
+              target={grid[x][y].target}
+              start={grid[x][y].start}
+              blocked={grid[x][y].blocked}
+              visited={grid[x][y].visited}
+              targetPath={grid[x][y].targetPath}
+              activeTool={activeTool}
+              handleClick={handleClick}
+              handleDrag={handleDrag}
+            ></GridNode>
           );
-          canvas.push(rowElement);
+          row.push(GridNodeElement);
         }
-        const canvasElement = (
-          <div className="flex h-full select-none flex-col bg-slate-300">
-            {canvas.map((child) => child)}
+
+        let rowElement = (
+          <div className="flex h-full w-full flex-nowrap" key={rowId}>
+            {row.map((child) => {
+              return child;
+            })}
           </div>
         );
-        setGridElement(canvasElement);
-      };
-      paintGrid(grid);
-    },
-    [activeTool, handleClick, handleDrag]
-  );
+        canvas.push(rowElement);
+      }
+      const canvasElement = (
+        <div className="flex h-full select-none flex-col bg-slate-300">
+          {canvas.map((child) => child)}
+        </div>
+      );
+      return canvasElement;
+    };
+    return paintGrid(grid);
+  }, [activeTool, handleClick, handleDrag, grid]);
 
-  const createPath = (node: GridNode) => {
-    if (node.shortestPath === null) return;
-    node.shortestPath.targetPath = true;
-    createPath(node.shortestPath);
-  };
   /**
    * Initial setup when component is mounted
    * Add event listener to mousedown and mouseup to check if user is dragging
    */
   useEffect(() => {
-    setGrid(createGrid(25));
     document.addEventListener("mousedown", () => {
-      setMouseDown(true);
+      mouseDown.current = true;
     });
     document.addEventListener("mouseup", () => {
-      setMouseDown(false);
+      mouseDown.current = false;
     });
   }, []);
 
@@ -249,31 +324,80 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    * Handles grid reset when reset is initiated
    */
   useEffect(() => {
-    setGrid(createGrid(25));
+    setGrid(createGrid(1700, 800, 25));
     setStartLocation("");
     setTargetLocation("");
-    setTargetNode(undefined);
     console.log("Grid reset finalized");
-  }, [resetGrid]);
+  }, [resetGrid, createGrid]);
 
   /**
    * Run algorithm when user presses run button
    */
   useEffect(() => {
-    if (!grid || !targetNode || startLocation == "") return;
-    dijkstras(grid, startLocation);
-    createPath(targetNode);
-    drawGrid(grid);
+    if (!grid || targetLocation == "" || startLocation == "") return;
+    timeline.current = dijkstras(grid, startLocation);
+    animationStarted.current = true;
+    setGrid([...grid]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);
 
-  /**
-   * Redraw grid to respond to user action.
-   */
+  const createPath = useCallback(() => {
+    if (!grid || !targetLocation) return;
+    let x = Number(targetLocation.split("_")[1]);
+    let y = Number(targetLocation.split("_")[2]);
+    let updatedGrid = grid.map((inner) => inner.slice());
+    let currentNode = updatedGrid[x][y];
+
+    while (currentNode.shortestPath !== null) {
+      const pathNode = { ...currentNode.shortestPath, targetPath: true };
+      currentNode = currentNode.shortestPath;
+      shortestPath.current.push(pathNode);
+    }
+    setGrid(updatedGrid);
+  }, [grid, targetLocation]);
+  //Run timeline
   useEffect(() => {
-    if (!grid) return;
-    drawGrid(grid);
-  }, [grid, startLocation, targetLocation, activeTool, mouseDown, drawGrid]);
+    if (animationStarted.current && animationFinished.current) {
+      if (shortestPath.current.length === 0) {
+        console.log("poop");
+        animationFinished.current = false;
+        return;
+      }
+      console.log("pee");
+      let pathNode = shortestPath.current.pop();
+      setTimeout(
+        () =>
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+            if (pathNode === undefined) return updatedGrid;
+
+            updatedGrid[pathNode.x][pathNode.y] = pathNode;
+            return updatedGrid;
+          }),
+        frameDuration * 2
+      );
+    } else if (animationStarted.current && timeline.current.length == 0) {
+      animationFinished.current = true;
+      createPath();
+    } else if (animationStarted.current) {
+      let currentNode = timeline.current.shift();
+      setTimeout(
+        () =>
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+            if (currentNode === undefined) return updatedGrid;
+
+            updatedGrid[currentNode.x][currentNode.y] = currentNode;
+            return updatedGrid;
+          }),
+        frameDuration
+      );
+    }
+  }, [grid, createPath, frameDuration]);
 
   return (
     <div

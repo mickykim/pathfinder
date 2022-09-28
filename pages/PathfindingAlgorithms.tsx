@@ -2,8 +2,8 @@ import { arrayBuffer } from "stream/consumers";
 import { GridNode } from "./PathfinderGrid";
 
 export const dijkstras = (grid: GridNode[][], startLocation: string) => {
+  const timeline = [];
   const updatedGrid = grid.map((inner) => inner.slice());
-
   let startX = Number(startLocation.split("_")[1]);
   let startY = Number(startLocation.split("_")[2]);
   let xOffsets = [1, -1, 0, 0];
@@ -12,12 +12,12 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   for (let i = 0; i < priorityQueue.length; i++) {
     const x = priorityQueue[i][0];
     const y = priorityQueue[i][1];
+    updatedGrid[x][y] = { ...updatedGrid[x][y], visited: true };
+
     if (updatedGrid[x][y].target === true) {
+      timeline.push(updatedGrid[x][y]);
       break;
     }
-    const nodeElement = document.getElementById(startLocation);
-    // nodeElement?.classList.add("bg-yellow-700");
-    updatedGrid[x][y].visited = true;
 
     /**
      * Checks if the node is out of bounds or already visited.
@@ -40,10 +40,11 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
           updatedGrid[x][y].distance + 1 <
           updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance
         ) {
-          updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance =
-            updatedGrid[x][y].distance + 1;
-          updatedGrid[x + xOffsets[j]][y + yOffsets[j]].shortestPath =
-            updatedGrid[x][y];
+          updatedGrid[x + xOffsets[j]][y + yOffsets[j]] = {
+            ...updatedGrid[x + xOffsets[j]][y + yOffsets[j]],
+            distance: updatedGrid[x][y].distance + 1,
+            shortestPath: updatedGrid[x][y],
+          };
         }
         if (
           !priorityQueue.some(
@@ -54,8 +55,9 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
         }
       }
     }
+    timeline.push(updatedGrid[x][y]);
   }
-  return updatedGrid;
+  return timeline;
 };
 
 export const astar = () => {};
