@@ -29,6 +29,7 @@ const GridNode = ({
   const startIcon = "hover:bg-sky-500 hover:animate-pulse-slow";
   const targetIcon = "hover:bg-red-500 hover:animate-pulse-slow";
   const wallIcon = "hover:bg-slate-800 hover:animate-pulse-slow";
+  const eraserIcon = "hover:bg-slate-200 hover:animate-pulse-slow";
   const [hoverIcon, setHoverIcon] = useState("");
   const node = useRef(null);
 
@@ -40,6 +41,8 @@ const GridNode = ({
         ? targetIcon
         : activeTool === "wall"
         ? wallIcon
+        : activeTool === "eraser"
+        ? eraserIcon
         : ""
     );
   }, [activeTool]);

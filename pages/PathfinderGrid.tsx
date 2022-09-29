@@ -1,4 +1,3 @@
-import { time } from "console";
 import React, {
   ReactElement,
   useCallback,
@@ -52,6 +51,19 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    * @param squareSize size of grid node square
    * @returns Grid data double array
    */
+
+  const canvasWrapper = useRef<HTMLDivElement>(null);
+  const [grid, setGrid] = useState<GridNode[][]>([]);
+  const [startLocation, setStartLocation] = useState<string>("");
+  const [targetLocation, setTargetLocation] = useState<string>("");
+  const [frameDuration] = useState(5);
+  const timeline = useRef<GridNode[]>([]);
+  const animationStarted = useRef<boolean>(false);
+  const animationFinished = useRef<boolean>(false);
+  const mouseDown = useRef<boolean>(false);
+  const shortestPath = useRef<GridNode[]>([]);
+  const unvisitedGrid = useRef<GridNode[][]>([]);
+
   const createGrid = useCallback(
     (gridWidth: number, gridHeight: number, squareSize: number) => {
       let tempGrid: GridNode[][] = [];
@@ -74,22 +86,15 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
         }
         tempGrid.push(row);
       }
-      console.log("grid created");
+      unvisitedGrid.current = tempGrid.map((inner) =>
+        inner.map((node) => {
+          return { ...node };
+        })
+      );
       return tempGrid;
     },
     []
   );
-  const canvasWrapper = useRef<HTMLDivElement>(null);
-  const [grid, setGrid] = useState<GridNode[][]>(createGrid(1700, 800, 25));
-  const [startLocation, setStartLocation] = useState<string>("");
-  const [targetLocation, setTargetLocation] = useState<string>("");
-  const [frameDuration] = useState(5);
-  const timeline = useRef<GridNode[]>([]);
-  const animationStarted = useRef<boolean>(false);
-  const animationFinished = useRef<boolean>(false);
-  const mouseDown = useRef<boolean>(false);
-  const shortestPath = useRef<GridNode[]>([]);
-  const unvisitedGrid = useRef<GridNode[][]>([]);
 
   const runDijkstra = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
@@ -125,6 +130,8 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
         const y = Number(nodeLocation.split("_")[2]);
         switch (activeTool) {
           case "start":
+            // Prevent from starting point to be moved after running algorithm
+            if (animationFinished.current === true) return;
             if (startLocation !== "") {
               const prevX = Number(startLocation.split("_")[1]);
               const prevY = Number(startLocation.split("_")[2]);
@@ -181,7 +188,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             }
 
             setStartLocation(nodeLocation);
-            console.count("start placed");
             break;
 
           case "target":
@@ -240,10 +246,11 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
               });
             }
             setTargetLocation(nodeLocation);
-            console.count("target placed");
             break;
 
           case "wall":
+            // Prevent additional walls to be created after running algorithm
+            if (animationFinished.current === true) return;
             setGrid((prevGrid) => {
               let updatedGrid = prevGrid.map((inner) => {
                 return inner.slice();
@@ -261,7 +268,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
               updatedGrid[x][y] = newNode;
               return updatedGrid;
             });
-            console.count("wall placed");
             break;
           case "eraser":
             setGrid((prevGrid) => {
@@ -281,7 +287,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
               updatedGrid[x][y] = newNode;
               return updatedGrid;
             });
-            console.count("deleted node");
             break;
 
           default:
@@ -316,7 +321,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
 
   const gridElement = useMemo(() => {
     let paintGrid = (grid: GridNode[][]) => {
-      console.log("drawing grid");
       if (!grid) return;
 
       const canvas = [];
@@ -373,11 +377,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     document.addEventListener("mouseup", () => {
       mouseDown.current = false;
     });
-    unvisitedGrid.current = grid.map((inner) =>
-      inner.map((node) => {
-        return { ...node };
-      })
-    );
+    setGrid(createGrid(1700, 800, 25));
   }, []);
 
   /**
@@ -392,8 +392,6 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
       animationFinished.current = false;
       animationStarted.current = false;
       setGrid(createGrid(1700, 800, 25));
-
-      console.log("Grid reset finalized");
     }, frameDuration);
   }, [resetGrid, createGrid, frameDuration]);
 
@@ -420,9 +418,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
       shortestPath.current.push(pathNode);
       currentNode = currentNode.shortestPath;
     }
-    console.log(shortestPath.current);
     setGrid(updatedGrid);
-    console.log("path created");
   }, [grid, targetLocation]);
 
   // Recreate path only if target location changes and new location is in a visited node.
