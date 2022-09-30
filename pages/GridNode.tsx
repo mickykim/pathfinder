@@ -98,7 +98,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={` h-full w-full animate-circle border border-slate-100 bg-green-500 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full  border border-slate-100 bg-green-500 transition-colors duration-75 ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onClick={handleClick}
         draggable="false"
