@@ -270,6 +270,12 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
             });
             break;
           case "eraser":
+            if (startLocation !== "" && nodeLocation === startLocation) {
+              setStartLocation("");
+            }
+            if (targetLocation !== "" && nodeLocation === targetLocation) {
+              setTargetLocation("");
+            }
             setGrid((prevGrid) => {
               let updatedGrid = prevGrid.map((inner) => {
                 return inner.slice();
@@ -278,9 +284,9 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
               let newNode: GridNode = {
                 ...updatedGrid[x][y],
                 start: false,
-                distance: Number.MAX_SAFE_INTEGER,
                 target: false,
                 blocked: false,
+                targetPath: false,
               };
               unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
@@ -421,7 +427,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     setGrid(updatedGrid);
   }, [grid, targetLocation]);
 
-  // Recreate path only if target location changes and new location is in a visited node.
+  // Recreate path ONLY if target location changes AND new location is in a visited node.
   useEffect(() => {
     if (targetLocation == "") return;
 
