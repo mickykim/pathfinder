@@ -66,12 +66,13 @@ const Toolbar = ({
   const runButton = useRef<HTMLButtonElement>(null);
   const infoButton = useRef<HTMLButtonElement>(null);
   const resetButton = useRef<HTMLButtonElement>(null);
+
   return (
-    <div className="mb-8 flex justify-evenly">
-      <div>
+    <div className="absolute bottom-2 flex justify-evenly ">
+      <div className="rounded-lg bg-slate-700 p-1">
         <button
           id="start"
-          className="border border-black bg-slate-300 py-4 px-8"
+          className="rounded-xl py-4 px-8"
           onClick={setActiveTool}
           ref={startButton}
         >
@@ -79,7 +80,7 @@ const Toolbar = ({
         </button>
         <button
           id="target"
-          className="border border-black bg-slate-300 py-4 px-8"
+          className=" rounded-xl py-4 px-8"
           onClick={setActiveTool}
           ref={targetButton}
         >
@@ -87,7 +88,7 @@ const Toolbar = ({
         </button>
         <button
           id="wall"
-          className="border border-black bg-slate-300 py-4 px-8"
+          className=" rounded-xl py-4 px-8"
           onClick={setActiveTool}
           ref={wallButton}
         >
@@ -95,30 +96,29 @@ const Toolbar = ({
         </button>
         <button
           id="eraser"
-          className="border border-black bg-slate-300 py-4 px-8"
+          className=" rounded-xl py-4 px-8"
           onClick={setActiveTool}
           ref={eraserButton}
         >
           Eraser
         </button>
-      </div>
-      <div>
+
         <button
-          className="border border-black  bg-green-400 py-4 px-8"
+          className=" rounded-xl  py-4 px-8"
           ref={runButton}
           onClick={toggleRun}
         >
           Run
         </button>
         <button
-          className="border border-black bg-yellow-300  py-4 px-8 "
+          className=" rounded-xl  py-4 px-8 "
           ref={infoButton}
           onClick={toggleInfo}
         >
           Info
         </button>
         <button
-          className="border border-black bg-red-300  py-4 px-8 "
+          className="  rounded-xl py-4 px-8"
           ref={resetButton}
           onClick={toggleReset}
         >
