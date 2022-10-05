@@ -64,37 +64,42 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
   const shortestPath = useRef<GridNode[]>([]);
   const unvisitedGrid = useRef<GridNode[][]>([]);
 
-  const createGrid = useCallback(
-    (gridWidth: number, gridHeight: number, squareSize: number) => {
-      let tempGrid: GridNode[][] = [];
-      for (let x = 0; x < Math.floor(gridHeight / squareSize); x++) {
-        let row: GridNode[] = [];
-        for (let y = 0; y < Math.floor(gridWidth / squareSize); y++) {
-          let gridNodeState: GridNode = {
-            start: false,
-            target: false,
-            visited: false,
-            blocked: false,
-            shortestPath: null,
-            targetPath: false,
-            x: x,
-            y: y,
-            distance: Number.MAX_SAFE_INTEGER,
-            id: `node_${x}_${y}`,
-          };
-          row.push(gridNodeState);
-        }
-        tempGrid.push(row);
+  const createGrid = useCallback((squareSize: number) => {
+    let tempGrid: GridNode[][] = [];
+    for (
+      let x = 0;
+      x < Math.floor(document.documentElement.clientHeight / squareSize);
+      x++
+    ) {
+      let row: GridNode[] = [];
+      for (
+        let y = 0;
+        y < Math.floor(document.documentElement.clientWidth / squareSize);
+        y++
+      ) {
+        let gridNodeState: GridNode = {
+          start: false,
+          target: false,
+          visited: false,
+          blocked: false,
+          shortestPath: null,
+          targetPath: false,
+          x: x,
+          y: y,
+          distance: Number.MAX_SAFE_INTEGER,
+          id: `node_${x}_${y}`,
+        };
+        row.push(gridNodeState);
       }
-      unvisitedGrid.current = tempGrid.map((inner) =>
-        inner.map((node) => {
-          return { ...node };
-        })
-      );
-      return tempGrid;
-    },
-    []
-  );
+      tempGrid.push(row);
+    }
+    unvisitedGrid.current = tempGrid.map((inner) =>
+      inner.map((node) => {
+        return { ...node };
+      })
+    );
+    return tempGrid;
+  }, []);
 
   const runDijkstra = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
@@ -132,62 +137,65 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
           case "start":
             // Prevent from starting point to be moved after running algorithm
             if (animationFinished.current === true) return;
-            if (startLocation !== "") {
-              const prevX = Number(startLocation.split("_")[1]);
-              const prevY = Number(startLocation.split("_")[2]);
-              setGrid((prevGrid) => {
-                let updatedGrid = prevGrid.map((inner) => {
-                  return inner.slice();
+
+            if (event.button === 0) {
+              if (startLocation !== "") {
+                const prevX = Number(startLocation.split("_")[1]);
+                const prevY = Number(startLocation.split("_")[2]);
+                setGrid((prevGrid) => {
+                  let updatedGrid = prevGrid.map((inner) => {
+                    return inner.slice();
+                  });
+                  let prevStartNode: GridNode = {
+                    ...updatedGrid[prevX][prevY],
+                    start: false,
+                    targetPath: false,
+
+                    distance: Number.MAX_SAFE_INTEGER,
+                  };
+                  let newNode: GridNode = {
+                    ...updatedGrid[x][y],
+                    start: true,
+                    distance: 0,
+                    target: false,
+                    blocked: false,
+                    targetPath: false,
+                  };
+
+                  unvisitedGrid.current[prevX][prevY] = {
+                    ...prevStartNode,
+                    visited: false,
+                  };
+                  unvisitedGrid.current[x][y] = {
+                    ...newNode,
+                    visited: false,
+                  };
+
+                  updatedGrid[prevX][prevY] = prevStartNode;
+                  updatedGrid[x][y] = newNode;
+                  return updatedGrid;
                 });
-                let prevStartNode: GridNode = {
-                  ...updatedGrid[prevX][prevY],
-                  start: false,
-                  targetPath: false,
+              } else {
+                setGrid((prevGrid) => {
+                  let updatedGrid = prevGrid.map((inner) => {
+                    return inner.slice();
+                  });
+                  let newNode: GridNode = {
+                    ...updatedGrid[x][y],
+                    start: true,
+                    distance: 0,
+                    target: false,
+                    blocked: false,
+                  };
+                  unvisitedGrid.current[x][y] = { ...newNode };
 
-                  distance: Number.MAX_SAFE_INTEGER,
-                };
-                let newNode: GridNode = {
-                  ...updatedGrid[x][y],
-                  start: true,
-                  distance: 0,
-                  target: false,
-                  blocked: false,
-                  targetPath: false,
-                };
-
-                unvisitedGrid.current[prevX][prevY] = {
-                  ...prevStartNode,
-                  visited: false,
-                };
-                unvisitedGrid.current[x][y] = {
-                  ...newNode,
-                  visited: false,
-                };
-
-                updatedGrid[prevX][prevY] = prevStartNode;
-                updatedGrid[x][y] = newNode;
-                return updatedGrid;
-              });
-            } else {
-              setGrid((prevGrid) => {
-                let updatedGrid = prevGrid.map((inner) => {
-                  return inner.slice();
+                  updatedGrid[x][y] = newNode;
+                  return updatedGrid;
                 });
-                let newNode: GridNode = {
-                  ...updatedGrid[x][y],
-                  start: true,
-                  distance: 0,
-                  target: false,
-                  blocked: false,
-                };
-                unvisitedGrid.current[x][y] = { ...newNode };
+              }
 
-                updatedGrid[x][y] = newNode;
-                return updatedGrid;
-              });
+              setStartLocation(nodeLocation);
             }
-
-            setStartLocation(nodeLocation);
             break;
 
           case "target":
@@ -363,7 +371,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
         canvas.push(rowElement);
       }
       const canvasElement = (
-        <div className="flex h-full select-none flex-col bg-slate-300">
+        <div className="flex h-full select-none flex-col bg-slate-800">
           {canvas.map((child) => child)}
         </div>
       );
@@ -383,7 +391,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     document.addEventListener("mouseup", () => {
       mouseDown.current = false;
     });
-    setGrid(createGrid(1700, 800, 25));
+    setGrid(createGrid(25));
   }, []);
 
   /**
@@ -397,7 +405,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
       timeline.current = [];
       animationFinished.current = false;
       animationStarted.current = false;
-      setGrid(createGrid(1700, 800, 25));
+      setGrid(createGrid(25));
     }, frameDuration);
   }, [resetGrid, createGrid, frameDuration]);
 
@@ -490,7 +498,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
     <div
       id="canvas__wrapper"
       ref={canvasWrapper}
-      className="outline-3 h-[800px] w-[1700px] outline outline-black"
+      className="outline-3 h-full w-full outline outline-black"
     >
       {gridElement}
     </div>

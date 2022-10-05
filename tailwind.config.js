@@ -11,7 +11,7 @@ module.exports = {
           "0%": { clipPath: "circle(15%)", backgroundColor: "rgb(133 77 14)" },
           "100%": {
             clipPath: "circle(75%)",
-            backgroundColor: "rgb(234 179 8)",
+            backgroundColor: "rgb(202 138 4)",
           },
         },
         circle: {

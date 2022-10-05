@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { ReactElement, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import PathfinderGrid from "./PathfinderGrid";
 import styles from "../styles/Home.module.css";
 import HeaderSection from "./HeaderSection";
@@ -40,9 +40,18 @@ const Home: NextPage = () => {
     setReset(!reset);
     console.log("Grid reset initiated");
   };
+  useEffect(() => {
+    document.addEventListener(
+      "contextmenu",
+      function (e) {
+        e.preventDefault();
+      },
+      false
+    );
+  }, []);
   const displayInfoModal = () => {};
   return (
-    <div className=" bg-slate-300">
+    <div className=" bg-slate-800">
       <Head>
         <title>Pathfinder</title>
         <meta name="description" content="Pathfinding algorithm visualizer" />
@@ -50,7 +59,6 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="flex h-screen w-full flex-col items-center">
-        <HeaderSection />
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
