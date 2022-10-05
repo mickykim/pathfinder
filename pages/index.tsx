@@ -6,12 +6,15 @@ import PathfinderGrid from "./PathfinderGrid";
 import styles from "../styles/Home.module.css";
 import HeaderSection from "./HeaderSection";
 import Toolbar from "./Toolbar";
+import InfoModal from "./InfoModal";
 
 const Home: NextPage = () => {
   const [activeTool, setActiveTool] = useState<string>("");
   const [reset, setReset] = useState<boolean>(false);
   const [runAlgorithm, setRunAlgorithm] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
+  const [currentAlgorithm, setCurrentAlgorithm] = useState("dijkstra");
+
   const setStartTool = () => {
     setActiveTool("start");
     console.log("start tool selected");
@@ -40,6 +43,15 @@ const Home: NextPage = () => {
     setReset(!reset);
     console.log("Grid reset initiated");
   };
+  const setDijkstrasAlgorithm = () => {
+    setCurrentAlgorithm("dijkstra");
+    console.log("Dijkstra set");
+  };
+
+  const setAStar = () => {
+    setCurrentAlgorithm("a*");
+    console.log("A* set");
+  };
   useEffect(() => {
     document.addEventListener(
       "contextmenu",
@@ -58,7 +70,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex h-screen w-full flex-col items-center">
+      <main className="relative flex h-screen w-full flex-col items-center">
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
@@ -67,12 +79,17 @@ const Home: NextPage = () => {
           toggleRun={toggleRunAlgorithm}
           toggleInfo={toggleShowInfo}
           toggleReset={toggleReset}
+          toggleDijkstra={setDijkstrasAlgorithm}
+          toggleAStar={setAStar}
+          currentAlgorithm={currentAlgorithm}
         />
         <PathfinderGrid
           activeTool={activeTool}
           resetGrid={reset}
           runAlgorithm={runAlgorithm}
+          currentAlgorithm={currentAlgorithm}
         />
+        {showInfo ? <InfoModal toggleInfo={toggleShowInfo} /> : <></>}
       </main>
 
       <footer className="h-full bg-slate-700"></footer>

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   FaEraser,
   FaFlagCheckered,
@@ -20,6 +20,9 @@ interface PropTypes {
   toggleReset: VoidFunction;
   toggleRun: VoidFunction;
   toggleInfo: VoidFunction;
+  toggleDijkstra: VoidFunction;
+  toggleAStar: VoidFunction;
+  currentAlgorithm: string;
 }
 
 const Toolbar = ({
@@ -30,6 +33,9 @@ const Toolbar = ({
   toggleReset,
   toggleRun,
   toggleInfo,
+  toggleAStar,
+  toggleDijkstra,
+  currentAlgorithm,
 }: PropTypes) => {
   const setActiveTool = (event: React.MouseEvent<HTMLButtonElement>) => {
     const color = ["bg-sky-500", "active"];
@@ -115,21 +121,29 @@ const Toolbar = ({
         </button>
       </div>
       <span className="mx-2  my-1 inline-block w-[1px]  bg-slate-500" />
-      <div className="flex">
-        <div className="group flex items-center justify-center  rounded-xl hover:bg-slate-600">
-          <MdOutlineKeyboardArrowRight className="transition-all group-hover:-rotate-90" />
-          <div className=" absolute bottom-3/4 hidden flex-col items-center justify-center p-2 group-hover:flex">
-            <button className="rounded-t-xl bg-slate-700 px-6 py-4 hover:bg-slate-600">
-              Link 1
+      <div className="flex ">
+        <div className="group flex  w-full items-center justify-center rounded-xl ">
+          <div className=" absolute bottom-3/4 hidden flex-col items-center justify-center p-6 group-hover:flex group-active:flex">
+            <button
+              className="rounded-t-xl bg-slate-700 px-6 py-4 hover:bg-slate-600"
+              onClick={toggleDijkstra}
+              onTouchEnd={toggleDijkstra}
+            >
+              Dijkstra
             </button>
-            <button className="bg-slate-700 px-6 py-4 hover:bg-slate-600">
-              Link 2
-            </button>
-            <button className="bg-slate-700 px-6 py-4 hover:bg-slate-600">
-              Link 3
+            <button
+              className="w-full  rounded-b-xl bg-slate-700 px-6 py-4 hover:bg-slate-600"
+              onClick={toggleAStar}
+              onTouchEnd={toggleAStar}
+            >
+              A*
             </button>
           </div>
-          <button className="">Algorithm</button>
+          <MdOutlineKeyboardArrowRight className="block transition-all group-hover:-rotate-90 group-active:-rotate-90" />
+          <button className="w-16 rounded-xl hover:bg-slate-600">
+            {currentAlgorithm.charAt(0).toUpperCase() +
+              currentAlgorithm.slice(1)}
+          </button>
         </div>
         <button
           className="rounded-xl py-4  px-4 [&:not(.active)]:hover:bg-slate-600"

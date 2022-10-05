@@ -39,13 +39,19 @@ interface PropTypes {
   activeTool: string;
   resetGrid: boolean;
   runAlgorithm: boolean;
+  currentAlgorithm: string;
 }
 /**
  * Creates GUI for pathfind visualizer. Grid is composed of a double array of GridNode elements
  * @param {PropTypes} PropTypes
  * @returns
  */
-const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
+const PathfinderGrid = ({
+  activeTool,
+  resetGrid,
+  runAlgorithm,
+  currentAlgorithm,
+}: PropTypes) => {
   /**
    * Initializes and creates a GridNode double array that represents the state of every node in the graph.
    * @param squareSize size of grid node square
@@ -414,7 +420,8 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm }: PropTypes) => {
    */
 
   useEffect(() => {
-    runDijkstra();
+    if (currentAlgorithm === "dijkstra") runDijkstra();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);
 
