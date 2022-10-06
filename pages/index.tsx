@@ -2,11 +2,11 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import { ReactElement, useEffect, useRef, useState } from "react";
-import PathfinderGrid from "./PathfinderGrid";
+import PathfinderGrid from "../components/PathfinderGrid";
 import styles from "../styles/Home.module.css";
-import HeaderSection from "./HeaderSection";
-import Toolbar from "./Toolbar";
-import InfoModal from "./InfoModal";
+import HeaderSection from "../components/HeaderSection";
+import Toolbar from "../components/Toolbar";
+import InfoModal from "../components/InfoModal";
 
 const Home: NextPage = () => {
   const [activeTool, setActiveTool] = useState<string>("");
