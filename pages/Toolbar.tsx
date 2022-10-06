@@ -89,7 +89,7 @@ const Toolbar = ({
       <div className="">
         <button
           id="start"
-          className="rounded-xl py-4 px-4  [&:not(.active)]:hover:bg-slate-600"
+          className="rounded-xl p-2 md:p-4  [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={startButton}
         >
@@ -97,7 +97,7 @@ const Toolbar = ({
         </button>
         <button
           id="target"
-          className=" rounded-xl py-4 px-4 [&:not(.active)]:hover:bg-slate-600"
+          className=" rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={targetButton}
         >
@@ -105,7 +105,7 @@ const Toolbar = ({
         </button>
         <button
           id="wall"
-          className="rounded-xl py-4 px-4 [&:not(.active)]:hover:bg-slate-600"
+          className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={wallButton}
         >
@@ -113,7 +113,7 @@ const Toolbar = ({
         </button>
         <button
           id="eraser"
-          className="rounded-xl py-4 px-4 [&:not(.active)]:hover:bg-slate-600"
+          className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={eraserButton}
         >
@@ -123,9 +123,9 @@ const Toolbar = ({
       <span className="mx-2  my-1 inline-block w-[1px]  bg-slate-500" />
       <div className="flex ">
         <div className="group flex  w-full items-center justify-center rounded-xl ">
-          <div className=" absolute bottom-3/4 hidden flex-col items-center justify-center p-6 group-hover:flex group-active:flex">
+          <div className=" absolute bottom-3/4 hidden flex-col  items-baseline justify-center p-6 group-hover:flex group-active:flex">
             <button
-              className="rounded-t-xl bg-slate-700 px-6 py-4 hover:bg-slate-600"
+              className="rounded-t-xl bg-slate-700 px-3 py-2 hover:bg-slate-600 md:px-6 md:py-4"
               onClick={toggleDijkstra}
               onTouchEnd={toggleDijkstra}
             >
@@ -140,13 +140,13 @@ const Toolbar = ({
             </button>
           </div>
           <MdOutlineKeyboardArrowRight className="block transition-all group-hover:-rotate-90 group-active:-rotate-90" />
-          <button className="w-16 rounded-xl hover:bg-slate-600">
+          <button className="w-14 rounded-xl hover:bg-slate-600 md:w-16">
             {currentAlgorithm.charAt(0).toUpperCase() +
               currentAlgorithm.slice(1)}
           </button>
         </div>
         <button
-          className="rounded-xl py-4  px-4 [&:not(.active)]:hover:bg-slate-600"
+          className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           ref={runButton}
           onClick={toggleRun}
         >
@@ -154,14 +154,14 @@ const Toolbar = ({
         </button>
 
         <button
-          className="rounded-xl  py-4 px-4 [&:not(.active)]:hover:bg-slate-600"
+          className="rounded-xl  p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           ref={resetButton}
           onClick={toggleReset}
         >
           <FaRedo />
         </button>
         <button
-          className="rounded-xl py-4  px-4 [&:not(.active)]:hover:bg-slate-600 "
+          className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600 "
           ref={infoButton}
           onClick={toggleInfo}
         >

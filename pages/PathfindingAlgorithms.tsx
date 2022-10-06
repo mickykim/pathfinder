@@ -2,7 +2,7 @@ import { arrayBuffer } from "stream/consumers";
 import { GridNode } from "./PathfinderGrid";
 
 export const dijkstras = (grid: GridNode[][], startLocation: string) => {
-  const timeline = [];
+  const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
   let startX = Number(startLocation.split("_")[1]);
   let startY = Number(startLocation.split("_")[2]);
@@ -60,4 +60,26 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   return timeline;
 };
 
-export const astar = () => {};
+export const astar = (
+  grid: GridNode[],
+  startLocation: string,
+  targetLocation: string
+) => {
+  const timeline: GridNode[][][] = [];
+  const updatedGrid = grid.map((inner) => inner.slice());
+  let startX = Number(startLocation.split("_")[1]);
+  let startY = Number(startLocation.split("_")[2]);
+  let targetX = Number(targetLocation.split("_")[1]);
+  let targetY = Number(targetLocation.split("_")[2]);
+  let xOffsets = [1, -1, 0, 0];
+  let yOffsets = [0, 0, 1, -1];
+  const priorityQueue = [[startX, startY]];
+  for (let i = 0; i < priorityQueue.length; i++) {
+    const x = priorityQueue[i][0];
+    const y = priorityQueue[i][1];
+    updatedGrid[x][y] = { ...updatedGrid[x][y], visited: true };
+
+    timeline.push(updatedGrid[x][y]);
+  }
+  return timeline;
+};

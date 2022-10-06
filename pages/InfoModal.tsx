@@ -34,10 +34,10 @@ const InfoModal = ({ toggleInfo }: PropTypes) => {
       >
         <MdClose
           onClick={toggleInfo}
-          className="absolute right-10 top-8 cursor-pointer text-2xl text-white opacity-100"
+          className="absolute top-9 right-5 cursor-pointer text-2xl text-white opacity-100 lg:right-10"
         />
-        <h2 className="pb-8 text-xl font-semibold">Information</h2>
-        <div className="gap-28 lg:flex">
+        <h2 className="pb-8 text-xl font-semibold">Pathfinder Information</h2>
+        <div className="flex-wrap gap-28">
           <div>
             <h3 className="py-4 text-lg font-semibold">Tools</h3>
             <ul>

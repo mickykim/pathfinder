@@ -400,6 +400,73 @@ const PathfinderGrid = ({
     setGrid(createGrid(25));
   }, []);
 
+  const handleTouch = useCallback(
+    (event: React.TouchEvent<HTMLElement>) => {
+      if (animationStarted.current) return;
+      const nodeElement = document.elementFromPoint(
+        event.touches[0].clientX,
+        event.touches[0].clientY
+      );
+      if (!nodeElement) return;
+      const nodeLocation = nodeElement.id;
+      const x = Number(nodeLocation.split("_")[1]);
+      const y = Number(nodeLocation.split("_")[2]);
+      switch (activeTool) {
+        case "wall":
+          // Prevent additional walls to be created after running algorithm
+          if (animationFinished.current === true) return;
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+
+            let newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: false,
+              distance: Number.MAX_SAFE_INTEGER,
+              target: false,
+              blocked: true,
+            };
+            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+
+            updatedGrid[x][y] = newNode;
+            return updatedGrid;
+          });
+          break;
+
+        case "eraser":
+          if (startLocation !== "" && nodeLocation === startLocation) {
+            setStartLocation("");
+          }
+          if (targetLocation !== "" && nodeLocation === targetLocation) {
+            setTargetLocation("");
+          }
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+
+            let newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: false,
+              target: false,
+              blocked: false,
+              targetPath: false,
+            };
+            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+
+            updatedGrid[x][y] = newNode;
+            return updatedGrid;
+          });
+          break;
+
+        default:
+          break;
+      }
+    },
+    [activeTool, startLocation, targetLocation]
+  );
+
   /**
    * Handles grid reset when reset is initiated.
    * Reset is executed inside a timeout in order to wait until the current frame is rendered before resetting.
@@ -506,6 +573,7 @@ const PathfinderGrid = ({
       id="canvas__wrapper"
       ref={canvasWrapper}
       className="outline-3 h-full w-full outline outline-black"
+      onTouchMove={handleTouch}
     >
       {gridElement}
     </div>
