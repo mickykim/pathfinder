@@ -61,11 +61,11 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
 };
 
 export const astar = (
-  grid: GridNode[],
+  grid: GridNode[][],
   startLocation: string,
   targetLocation: string
 ) => {
-  const timeline: GridNode[][][] = [];
+  const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
   let startX = Number(startLocation.split("_")[1]);
   let startY = Number(startLocation.split("_")[2]);
