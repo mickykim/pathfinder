@@ -7,6 +7,7 @@ import React, {
   useState,
 } from "react";
 import GridNode from "./GridNode";
+import Bottleneck from "bottleneck";
 import { dijkstras } from "./PathfindingAlgorithms";
 /**
  * @typedef {Object} GridNode
@@ -69,7 +70,10 @@ const PathfinderGrid = ({
   const mouseDown = useRef<boolean>(false);
   const shortestPath = useRef<GridNode[]>([]);
   const unvisitedGrid = useRef<GridNode[][]>([]);
-
+  const limiter = new Bottleneck({
+    maxConcurrent: 1,
+    minTime: 50,
+  });
   const createGrid = useCallback((squareSize: number) => {
     let tempGrid: GridNode[][] = [];
     for (
@@ -338,6 +342,198 @@ const PathfinderGrid = ({
     },
     [activeTool, handleClick]
   );
+  /**
+   * Touch device touch event handler
+   */
+  const handleTouch = useCallback(
+    (event: React.TouchEvent<HTMLElement>) => {
+      if (animationStarted.current) return;
+      const nodeElement = document.elementFromPoint(
+        event.touches[0].clientX,
+        event.touches[0].clientY
+      );
+      if (!nodeElement) return;
+      const nodeLocation = nodeElement.id;
+      const x = Number(nodeLocation.split("_")[1]);
+      const y = Number(nodeLocation.split("_")[2]);
+      //Check if nodeElement with an xy coordinate id was found
+      if (!x || !y) return;
+
+      switch (activeTool) {
+        case "start":
+          // Prevent from starting point to be moved after running algorithm
+          if (animationFinished.current === true) return;
+
+          if (startLocation !== "") {
+            const prevX = Number(startLocation.split("_")[1]);
+            const prevY = Number(startLocation.split("_")[2]);
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+              let prevStartNode: GridNode = {
+                ...updatedGrid[prevX][prevY],
+                start: false,
+                targetPath: false,
+
+                distance: Number.MAX_SAFE_INTEGER,
+              };
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: true,
+                distance: 0,
+                target: false,
+                blocked: false,
+                targetPath: false,
+              };
+
+              unvisitedGrid.current[prevX][prevY] = {
+                ...prevStartNode,
+                visited: false,
+              };
+              unvisitedGrid.current[x][y] = {
+                ...newNode,
+                visited: false,
+              };
+
+              updatedGrid[prevX][prevY] = prevStartNode;
+              updatedGrid[x][y] = newNode;
+              return updatedGrid;
+            });
+          } else {
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+              if (!updatedGrid) return [];
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: true,
+                distance: 0,
+                target: false,
+                blocked: false,
+              };
+              unvisitedGrid.current[x][y] = { ...newNode };
+
+              updatedGrid[x][y] = newNode;
+              return updatedGrid;
+            });
+          }
+
+          setStartLocation(() => nodeLocation);
+          break;
+
+        case "target":
+          if (targetLocation !== "") {
+            const prevX = Number(targetLocation.split("_")[1]);
+            const prevY = Number(targetLocation.split("_")[2]);
+
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+              let prevTargetNode: GridNode = {
+                ...updatedGrid[prevX][prevY],
+                target: false,
+                distance: Number.MAX_SAFE_INTEGER,
+              };
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: false,
+                target: true,
+                distance: Number.MAX_SAFE_INTEGER,
+
+                blocked: false,
+              };
+
+              unvisitedGrid.current[prevX][prevY] = {
+                ...prevTargetNode,
+                visited: false,
+              };
+              unvisitedGrid.current[x][y] = {
+                ...newNode,
+                visited: false,
+              };
+              updatedGrid[prevX][prevY] = prevTargetNode;
+              updatedGrid[x][y] = newNode;
+
+              return updatedGrid;
+            });
+          } else {
+            setGrid((prevGrid) => {
+              let updatedGrid = prevGrid.map((inner) => {
+                return inner.slice();
+              });
+
+              let newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: false,
+                distance: Number.MAX_SAFE_INTEGER,
+                target: true,
+                blocked: false,
+              };
+
+              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+              updatedGrid[x][y] = newNode;
+              return updatedGrid;
+            });
+          }
+          setTargetLocation(() => nodeLocation);
+          break;
+
+        case "wall":
+          // Prevent additional walls to be created after running algorithm
+          if (animationFinished.current === true) return;
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+
+            let newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: false,
+              distance: Number.MAX_SAFE_INTEGER,
+              target: false,
+              blocked: true,
+            };
+            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+
+            updatedGrid[x][y] = newNode;
+            return updatedGrid;
+          });
+          break;
+        case "eraser":
+          if (startLocation !== "" && nodeLocation === startLocation) {
+            setStartLocation("");
+          }
+          if (targetLocation !== "" && nodeLocation === targetLocation) {
+            setTargetLocation("");
+          }
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.slice();
+            });
+
+            let newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: false,
+              target: false,
+              blocked: false,
+              targetPath: false,
+            };
+            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
+
+            updatedGrid[x][y] = newNode;
+            return updatedGrid;
+          });
+          break;
+
+        default:
+          break;
+      }
+    },
+    [activeTool, startLocation, targetLocation]
+  );
 
   const gridElement = useMemo(() => {
     let paintGrid = (grid: GridNode[][]) => {
@@ -399,73 +595,6 @@ const PathfinderGrid = ({
     });
     setGrid(createGrid(25));
   }, []);
-
-  const handleTouch = useCallback(
-    (event: React.TouchEvent<HTMLElement>) => {
-      if (animationStarted.current) return;
-      const nodeElement = document.elementFromPoint(
-        event.touches[0].clientX,
-        event.touches[0].clientY
-      );
-      if (!nodeElement) return;
-      const nodeLocation = nodeElement.id;
-      const x = Number(nodeLocation.split("_")[1]);
-      const y = Number(nodeLocation.split("_")[2]);
-      switch (activeTool) {
-        case "wall":
-          // Prevent additional walls to be created after running algorithm
-          if (animationFinished.current === true) return;
-          setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
-              return inner.slice();
-            });
-
-            let newNode: GridNode = {
-              ...updatedGrid[x][y],
-              start: false,
-              distance: Number.MAX_SAFE_INTEGER,
-              target: false,
-              blocked: true,
-            };
-            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
-
-            updatedGrid[x][y] = newNode;
-            return updatedGrid;
-          });
-          break;
-
-        case "eraser":
-          if (startLocation !== "" && nodeLocation === startLocation) {
-            setStartLocation("");
-          }
-          if (targetLocation !== "" && nodeLocation === targetLocation) {
-            setTargetLocation("");
-          }
-          setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
-              return inner.slice();
-            });
-
-            let newNode: GridNode = {
-              ...updatedGrid[x][y],
-              start: false,
-              target: false,
-              blocked: false,
-              targetPath: false,
-            };
-            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
-
-            updatedGrid[x][y] = newNode;
-            return updatedGrid;
-          });
-          break;
-
-        default:
-          break;
-      }
-    },
-    [activeTool, startLocation, targetLocation]
-  );
 
   /**
    * Handles grid reset when reset is initiated.
