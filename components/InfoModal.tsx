@@ -36,68 +36,68 @@ const InfoModal = ({ toggleInfo }: PropTypes) => {
           onClick={toggleInfo}
           className="absolute top-9 right-5 cursor-pointer text-2xl text-white opacity-100 lg:right-10"
         />
-        <h2 className="pb-8 text-xl font-semibold">Pathfinder Information</h2>
-        <div className="flex-wrap gap-28">
+        <h2 className="pb-4 text-xl font-semibold">Pathfinder Information</h2>
+        <div className="flex-wrap gap-28 lg:flex">
           <div>
-            <h3 className="py-4 text-lg font-semibold">Tools</h3>
+            <h3 className="pt-12 pb-4 text-lg font-semibold">Tools</h3>
             <ul>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaFlag className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Start Location</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaFlagCheckered className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Target Location</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <GiBrickWall className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Wall</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaEraser className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Eraser</p>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="py-4 text-lg font-semibold">Playback</h3>
+            <h3 className="pt-12 pb-4 text-lg font-semibold">Playback</h3>
             <ul>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <MdOutlineKeyboardArrowRight className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Select Algorithm</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaPlay className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Run Algorithm</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaRedo className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Reset Grid</p>
               </li>
-              <li className="flex py-2">
+              <li className="flex justify-between py-2">
                 <FaInfo className="text-xl" />
                 <p className="ml-4 text-sm font-semibold">Show Information</p>
               </li>
             </ul>
           </div>
           <div>
-            <h3 className="py-4 text-lg font-semibold">
+            <h3 className="pt-12 pb-4 text-lg font-semibold">
               Mouse/Keyboard Controls
             </h3>
             <ul>
-              <li className="flex items-baseline py-2">
+              <li className="flex items-baseline justify-between py-2">
                 <p>Left Click</p>
                 <p className="ml-4 text-sm font-semibold">
                   Place Selected Element
                 </p>
               </li>
-              <li className="flex items-baseline py-2">
+              <li className="flex items-baseline justify-between py-2">
                 <p>Right Click</p>
                 <p className="ml-4 text-sm font-semibold">
                   Remove Selected Element
                 </p>
               </li>
-              <li className="flex items-baseline py-2">
+              <li className="flex items-baseline justify-between py-2">
                 <p>F12</p>
                 <p className="ml-4 text-sm font-semibold">
                   Source Code / Dev Tools
@@ -106,17 +106,17 @@ const InfoModal = ({ toggleInfo }: PropTypes) => {
             </ul>
           </div>
           <div>
-            <h3 className="py-4 text-lg font-semibold">
+            <h3 className="pt-12 pb-4 text-lg font-semibold">
               Touch/Stylus Controls
             </h3>
             <ul>
-              <li className="flex items-baseline py-2">
+              <li className="flex items-baseline justify-between py-2">
                 <p>Tap</p>
                 <p className="ml-4 text-sm font-semibold">
                   Place Selected Element
                 </p>
               </li>
-              <li className="flex items-baseline py-2">
+              <li className="flex items-baseline justify-between py-2">
                 <p>Two-Finger Tap</p>
                 <p className="ml-4 text-sm font-semibold">Previous Tool</p>
               </li>
