@@ -357,7 +357,7 @@ const PathfinderGrid = ({
       const x = Number(nodeLocation.split("_")[1]);
       const y = Number(nodeLocation.split("_")[2]);
       //Check if nodeElement with an xy coordinate id was found
-      if (!x || !y) return;
+      if (isNaN(x) || isNaN(y)) return;
 
       switch (activeTool) {
         case "start":
@@ -405,7 +405,6 @@ const PathfinderGrid = ({
               let updatedGrid = prevGrid.map((inner) => {
                 return inner.slice();
               });
-              if (!updatedGrid) return [];
               let newNode: GridNode = {
                 ...updatedGrid[x][y],
                 start: true,
