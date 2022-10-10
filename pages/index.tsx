@@ -60,10 +60,16 @@ const Home: NextPage = () => {
       },
       false
     );
+    //Prevent mobile scrolling
+    window.addEventListener("scroll", (e) => {
+      e.preventDefault();
+      window.scrollTo(0, 0);
+    });
   }, []);
   const displayInfoModal = () => {};
   return (
-    <div className=" bg-slate-800">
+    // hide overflow scrolling for mobile
+    <div className=" fixed top-0 left-0 right-0 bottom-0 bg-slate-800">
       <Head>
         <title>Pathfinder</title>
         <meta name="description" content="Pathfinding algorithm visualizer" />
