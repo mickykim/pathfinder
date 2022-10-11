@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import GridNode from "./GridNode";
 import Bottleneck from "bottleneck";
-import { dijkstras } from "./PathfindingAlgorithms";
+import { astar, dijkstras } from "./PathfindingAlgorithms";
 /**
  * @typedef {Object} GridNode
  * @property GridNode.start
@@ -110,30 +110,6 @@ const PathfinderGrid = ({
     );
     return tempGrid;
   }, []);
-
-  const runDijkstra = useCallback(() => {
-    if (!grid || targetLocation == "" || startLocation == "") return;
-    //Algorithm has been run at least once beforehand
-    if (
-      animationStarted.current === false &&
-      animationFinished.current === true
-    ) {
-      timeline.current = dijkstras(unvisitedGrid.current, startLocation);
-      animationFinished.current = false;
-      animationStarted.current = true;
-      setGrid(
-        unvisitedGrid.current.map((inner) => {
-          return inner.map((node) => {
-            return { ...node };
-          });
-        })
-      );
-    } else {
-      timeline.current = dijkstras(grid, startLocation);
-      animationStarted.current = true;
-      setGrid([...grid]);
-    }
-  }, [grid, targetLocation, startLocation]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
@@ -581,6 +557,59 @@ const PathfinderGrid = ({
     return paintGrid(grid);
   }, [activeTool, handleClick, handleDrag, grid]);
 
+  const runDijkstra = useCallback(() => {
+    if (!grid || targetLocation == "" || startLocation == "") return;
+    //Algorithm has been run at least once beforehand
+    if (
+      animationStarted.current === false &&
+      animationFinished.current === true
+    ) {
+      timeline.current = dijkstras(unvisitedGrid.current, startLocation);
+      animationFinished.current = false;
+      animationStarted.current = true;
+      setGrid(
+        unvisitedGrid.current.map((inner) => {
+          return inner.map((node) => {
+            return { ...node };
+          });
+        })
+      );
+    } else {
+      timeline.current = dijkstras(grid, startLocation);
+      animationStarted.current = true;
+      setGrid([...grid]);
+    }
+  }, [grid, targetLocation, startLocation]);
+
+  const runAstar = useCallback(() => {
+    if (!grid || targetLocation == "" || startLocation == "") return;
+    //Algorithm has been run at least once beforehand
+    if (
+      animationStarted.current === false &&
+      animationFinished.current === true
+    ) {
+      timeline.current = astar(
+        unvisitedGrid.current,
+        startLocation,
+        targetLocation
+      );
+      animationFinished.current = false;
+      animationStarted.current = true;
+      // Replace grid with the unvisited grid to recalculate distances
+      setGrid(
+        unvisitedGrid.current.map((inner) => {
+          return inner.map((node) => {
+            return { ...node };
+          });
+        })
+      );
+    } else {
+      timeline.current = astar(grid, startLocation, targetLocation);
+      animationStarted.current = true;
+      setGrid([...grid]);
+    }
+  }, [grid, targetLocation, startLocation]);
+
   /**
    * Initial setup when component is mounted
    * Add event listener to mousedown and mouseup to check if user is dragging
@@ -616,6 +645,8 @@ const PathfinderGrid = ({
 
   useEffect(() => {
     if (currentAlgorithm === "dijkstra") runDijkstra();
+
+    if (currentAlgorithm === "astar") runAstar();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);

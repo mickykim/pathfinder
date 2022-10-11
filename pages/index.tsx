@@ -49,7 +49,7 @@ const Home: NextPage = () => {
   };
 
   const setAStar = () => {
-    setCurrentAlgorithm("a*");
+    setCurrentAlgorithm("astar");
     console.log("A* set");
   };
   useEffect(() => {

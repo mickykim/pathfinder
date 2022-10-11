@@ -1,22 +1,44 @@
 import { arrayBuffer } from "stream/consumers";
 import { GridNode } from "./PathfinderGrid";
-import { BinaryMaxHeap } from "../utils/BinaryMaxHeap";
+import { BinaryMinHeap } from "../utils/BinaryHeap";
+
+const heuristic = (x: number, y: number, targetX: number, targetY: number) => {
+  const xdelta = Math.abs(targetX - x);
+  const ydelta = Math.abs(targetY - y);
+  return xdelta + ydelta;
+};
+
 export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
-  let startX = Number(startLocation.split("_")[1]);
-  let startY = Number(startLocation.split("_")[2]);
-  let xOffsets = [1, -1, 0, 0];
-  let yOffsets = [0, 0, 1, -1];
-  const priorityQueue = [[startX, startY]];
-  for (let i = 0; i < priorityQueue.length; i++) {
-    const x = priorityQueue[i][0];
-    const y = priorityQueue[i][1];
+  const startX = Number(startLocation.split("_")[1]);
+  const startY = Number(startLocation.split("_")[2]);
+  const xOffsets = [1, -1, 0, 0];
+  const yOffsets = [0, 0, 1, -1];
+  const priorityQueue = new BinaryMinHeap();
+  priorityQueue.insert({ x: startX, y: startY, priority: 0 });
+
+  // var heap = new BinaryMinHeap();
+  // [
+  //   10, 3, 4, 8, 2, 9, 7, 1, 2, 6, 5, 10, 3, 4, 8, 2, 9, 7, 1, 2, 6, 5, 10, 3,
+  //   4, 8, 2, 9, 7, 1, 2, 6, 5, 10, 3, 4, 8, 2, 9, 7, 1, 2, 6, 5,
+  // ].forEach((element) => {
+  //   heap.insert({ x: 0, y: 0, priority: element });
+  // });
+  // console.log(heap);
+
+  while (priorityQueue.length() > 0) {
+    const currentNode = priorityQueue.extractMin();
+    if (!currentNode) continue;
+    const x = currentNode.x;
+    const y = currentNode.y;
+    if (updatedGrid[x][y].visited) continue;
+
     updatedGrid[x][y] = { ...updatedGrid[x][y], visited: true };
 
     if (updatedGrid[x][y].target === true) {
       timeline.push(updatedGrid[x][y]);
-      break;
+      return timeline;
     }
 
     /**
@@ -45,23 +67,19 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
             distance: updatedGrid[x][y].distance + 1,
             shortestPath: updatedGrid[x][y],
           };
-        }
-        if (
-          !priorityQueue.some(
-            (row) => row[0] === x + xOffsets[j] && row[1] === y + yOffsets[j]
-          )
-        ) {
-          priorityQueue.push([x + xOffsets[j], y + yOffsets[j]]);
+          let priority = updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance;
+          priorityQueue.insert({
+            x: x + xOffsets[j],
+            y: y + yOffsets[j],
+            priority,
+          });
         }
       }
     }
     timeline.push(updatedGrid[x][y]);
   }
-  return timeline;
-};
 
-const heuristic = (x, y, targetX, targetY) => {
-  return 0;
+  return timeline;
 };
 
 export const astar = (
@@ -71,19 +89,20 @@ export const astar = (
 ) => {
   const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
-  let startX = Number(startLocation.split("_")[1]);
-  let startY = Number(startLocation.split("_")[2]);
-  let targetX = Number(targetLocation.split("_")[1]);
-  let targetY = Number(targetLocation.split("_")[2]);
-  let xOffsets = [1, -1, 0, 0];
-  let yOffsets = [0, 0, 1, -1];
-  const priorityQueue = new BinaryMaxHeap();
+  const startX = Number(startLocation.split("_")[1]);
+  const startY = Number(startLocation.split("_")[2]);
+  const targetX = Number(targetLocation.split("_")[1]);
+  const targetY = Number(targetLocation.split("_")[2]);
+  const xOffsets = [1, -1, 0, 0];
+  const yOffsets = [0, 0, 1, -1];
+  const priorityQueue = new BinaryMinHeap();
   priorityQueue.insert({ x: startX, y: startY, priority: 0 });
-  for (let i = 0; i < priorityQueue.length(); i++) {
-    const currentNode = priorityQueue.extractMax();
-    if (!currentNode) return;
+  while (priorityQueue.length() > 0) {
+    const currentNode = priorityQueue.extractMin();
+    if (!currentNode) continue;
     const x = currentNode.x;
     const y = currentNode.y;
+    // if (updatedGrid[x][y].visited) continue;
     updatedGrid[x][y] = { ...updatedGrid[x][y], visited: true };
 
     if (updatedGrid[x][y].target === true) {
@@ -98,7 +117,6 @@ export const astar = (
      *
      * Uses offsets arrays to create temporary adjacency list of the current node.
      * */
-
     for (let j = 0; j < 4; j++) {
       if (
         x + xOffsets[j] > -1 &&
@@ -117,18 +135,29 @@ export const astar = (
             distance: updatedGrid[x][y].distance + 1,
             shortestPath: updatedGrid[x][y],
           };
-        }
-
-        priorityQueue.insert({
-          x: x + xOffsets[j],
-          y: y + yOffsets[j],
-          priority:
+          const priority =
             updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance +
-            heuristic(x + xOffsets[j], y + yOffsets[j], targetX, targetY),
-        });
+            heuristic(x + xOffsets[j], y + yOffsets[j], targetX, targetY);
+          const priorityIndex = priorityQueue.findIndex(
+            x + xOffsets[j],
+            y + yOffsets[j]
+          );
+          if (priorityIndex !== null) {
+            priorityQueue.updatePriority(priorityIndex, priority);
+          } else {
+            priorityQueue.insert({
+              x: x + xOffsets[j],
+              y: y + yOffsets[j],
+              priority,
+            });
+          }
+        }
       }
     }
+    console.log(priorityQueue);
+
     timeline.push(updatedGrid[x][y]);
   }
+
   return timeline;
 };
