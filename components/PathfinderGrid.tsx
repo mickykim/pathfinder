@@ -7,7 +7,6 @@ import React, {
   useState,
 } from "react";
 import GridNode from "./GridNode";
-import Bottleneck from "bottleneck";
 import { astar, dijkstras } from "./PathfindingAlgorithms";
 /**
  * @typedef {Object} GridNode
@@ -73,10 +72,7 @@ const PathfinderGrid = ({
   const mouseDown = useRef<boolean>(false);
   const shortestPath = useRef<GridNode[]>([]);
   const unvisitedGrid = useRef<GridNode[][]>([]);
-  const limiter = new Bottleneck({
-    maxConcurrent: 1,
-    minTime: 50,
-  });
+
   const createGrid = useCallback((squareSize: number) => {
     let tempGrid: GridNode[][] = [];
     for (
@@ -363,6 +359,7 @@ const PathfinderGrid = ({
             updatedGrid[x][y] = newNode;
             return updatedGrid;
           });
+          setStartLocation(() => nodeLocation);
 
           break;
 
