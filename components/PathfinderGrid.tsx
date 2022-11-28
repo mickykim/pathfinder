@@ -59,7 +59,7 @@ const PathfinderGrid = ({
    * @returns Grid data double array
    */
 
-  const FUNCTION_RATE_LIMITER = 25;
+  const FUNCTION_RATE_LIMITER = 30;
 
   const canvasWrapper = useRef<HTMLDivElement>(null);
   const [grid, setGrid] = useState<GridNode[][]>([]);
