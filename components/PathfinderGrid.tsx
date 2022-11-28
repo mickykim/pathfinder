@@ -328,7 +328,7 @@ const PathfinderGrid = ({
    */
   const handleTouch = useCallback(
     (event: React.TouchEvent<HTMLElement>) => {
-      if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
+      // if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
       if (animationStarted.current) return;
       const nodeElement = document.elementFromPoint(
         event.touches[0].clientX,
@@ -345,63 +345,25 @@ const PathfinderGrid = ({
         case "start":
           // Prevent from starting point to be moved after running algorithm
           if (animationFinished.current === true) return;
-
-          if (startLocation !== "") {
-            const prevX = Number(startLocation.split("_")[1]);
-            const prevY = Number(startLocation.split("_")[2]);
-            setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
-                return inner.slice();
+          setGrid((prevGrid) => {
+            let updatedGrid = prevGrid.map((inner) => {
+              return inner.map((node) => {
+                return { ...node, start: false };
               });
-              let prevStartNode: GridNode = {
-                ...updatedGrid[prevX][prevY],
-                start: false,
-                targetPath: false,
-
-                distance: Number.MAX_SAFE_INTEGER,
-              };
-              let newNode: GridNode = {
-                ...updatedGrid[x][y],
-                start: true,
-                distance: 0,
-                target: false,
-                blocked: false,
-                targetPath: false,
-              };
-
-              unvisitedGrid.current[prevX][prevY] = {
-                ...prevStartNode,
-                visited: false,
-              };
-              unvisitedGrid.current[x][y] = {
-                ...newNode,
-                visited: false,
-              };
-
-              updatedGrid[prevX][prevY] = prevStartNode;
-              updatedGrid[x][y] = newNode;
-              return updatedGrid;
             });
-          } else {
-            setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
-                return inner.slice();
-              });
-              let newNode: GridNode = {
-                ...updatedGrid[x][y],
-                start: true,
-                distance: 0,
-                target: false,
-                blocked: false,
-              };
-              unvisitedGrid.current[x][y] = { ...newNode };
+            let newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: true,
+              distance: 0,
+              target: false,
+              blocked: false,
+            };
+            unvisitedGrid.current[x][y] = { ...newNode };
 
-              updatedGrid[x][y] = newNode;
-              return updatedGrid;
-            });
-          }
+            updatedGrid[x][y] = newNode;
+            return updatedGrid;
+          });
 
-          setStartLocation(() => nodeLocation);
           break;
 
         case "target":
