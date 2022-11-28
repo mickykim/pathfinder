@@ -59,6 +59,8 @@ const PathfinderGrid = ({
    * @returns Grid data double array
    */
 
+  const FUNCTION_RATE_LIMITER = 25;
+
   const canvasWrapper = useRef<HTMLDivElement>(null);
   const [grid, setGrid] = useState<GridNode[][]>([]);
   const [startLocation, setStartLocation] = useState<string>("");
@@ -307,7 +309,7 @@ const PathfinderGrid = ({
    */
   const handleDrag = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      if (Date.now() - time < 50) return;
+      if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
       let dragNode = (event: React.MouseEvent<HTMLElement>) => {
         if (
           !mouseDown.current ||
@@ -326,7 +328,7 @@ const PathfinderGrid = ({
    */
   const handleTouch = useCallback(
     (event: React.TouchEvent<HTMLElement>) => {
-      if (Date.now() - time < 50) return;
+      if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
       if (animationStarted.current) return;
       const nodeElement = document.elementFromPoint(
         event.touches[0].clientX,
