@@ -1,4 +1,11 @@
-import React, { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import GridNode from "./GridNode";
 import Bottleneck from "bottleneck";
 import { astar, dijkstras } from "./PathfindingAlgorithms";
@@ -40,7 +47,12 @@ interface PropTypes {
  * @param {PropTypes} PropTypes
  * @returns
  */
-const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm }: PropTypes) => {
+const PathfinderGrid = ({
+  activeTool,
+  resetGrid,
+  runAlgorithm,
+  currentAlgorithm,
+}: PropTypes) => {
   /**
    * Initializes and creates a GridNode double array that represents the state of every node in the graph.
    * @param squareSize size of grid node square
@@ -52,6 +64,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
   const [startLocation, setStartLocation] = useState<string>("");
   const [targetLocation, setTargetLocation] = useState<string>("");
   const [frameDuration] = useState(5);
+  const [time, setTime] = useState(0);
   const timeline = useRef<GridNode[]>([]);
   const animationStarted = useRef<boolean>(false);
   const animationFinished = useRef<boolean>(false);
@@ -64,9 +77,17 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
   });
   const createGrid = useCallback((squareSize: number) => {
     let tempGrid: GridNode[][] = [];
-    for (let x = 0; x < Math.floor(document.documentElement.clientHeight / squareSize); x++) {
+    for (
+      let x = 0;
+      x < Math.floor(document.documentElement.clientHeight / squareSize);
+      x++
+    ) {
       let row: GridNode[] = [];
-      for (let y = 0; y < Math.floor(document.documentElement.clientWidth / squareSize); y++) {
+      for (
+        let y = 0;
+        y < Math.floor(document.documentElement.clientWidth / squareSize);
+        y++
+      ) {
         let gridNodeState: GridNode = {
           start: false,
           target: false,
@@ -286,11 +307,17 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
    */
   const handleDrag = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
+      if (Date.now() - time < 50) return;
       let dragNode = (event: React.MouseEvent<HTMLElement>) => {
-        if (!mouseDown.current || (activeTool !== "wall" && activeTool !== "eraser")) return; // Check that user is dragging
+        if (
+          !mouseDown.current ||
+          (activeTool !== "wall" && activeTool !== "eraser")
+        )
+          return; // Check that user is dragging
         handleClick(event);
       };
       dragNode(event);
+      setTime(() => Date.now());
     },
     [activeTool, handleClick]
   );
@@ -299,8 +326,12 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
    */
   const handleTouch = useCallback(
     (event: React.TouchEvent<HTMLElement>) => {
+      if (Date.now() - time < 50) return;
       if (animationStarted.current) return;
-      const nodeElement = document.elementFromPoint(event.touches[0].clientX, event.touches[0].clientY);
+      const nodeElement = document.elementFromPoint(
+        event.touches[0].clientX,
+        event.touches[0].clientY
+      );
       if (!nodeElement) return;
       const nodeLocation = nodeElement.id;
       const x = Number(nodeLocation.split("_")[1]);
@@ -479,6 +510,7 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
         default:
           break;
       }
+      setTime(() => Date.now());
     },
     [activeTool, startLocation, targetLocation]
   );
@@ -521,7 +553,9 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
         canvas.push(rowElement);
       }
       const canvasElement = (
-        <div className="flex h-full select-none flex-col bg-slate-800">{canvas.map((child) => child)}</div>
+        <div className="flex h-full select-none flex-col bg-slate-800">
+          {canvas.map((child) => child)}
+        </div>
       );
       return canvasElement;
     };
@@ -531,7 +565,10 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
   const runDijkstra = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
     //Algorithm has been run at least once beforehand
-    if (animationStarted.current === false && animationFinished.current === true) {
+    if (
+      animationStarted.current === false &&
+      animationFinished.current === true
+    ) {
       timeline.current = dijkstras(unvisitedGrid.current, startLocation);
       animationFinished.current = false;
       animationStarted.current = true;
@@ -554,8 +591,15 @@ const PathfinderGrid = ({ activeTool, resetGrid, runAlgorithm, currentAlgorithm 
   const runAstar = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
     //Algorithm has been run at least once beforehand
-    if (animationStarted.current === false && animationFinished.current === true) {
-      timeline.current = astar(unvisitedGrid.current, startLocation, targetLocation);
+    if (
+      animationStarted.current === false &&
+      animationFinished.current === true
+    ) {
+      timeline.current = astar(
+        unvisitedGrid.current,
+        startLocation,
+        targetLocation
+      );
       animationStarted.current = true;
       animationFinished.current = false;
       // Replace grid with the unvisited grid to recalculate distances
