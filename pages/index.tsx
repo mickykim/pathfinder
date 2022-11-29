@@ -65,6 +65,15 @@ const Home: NextPage = () => {
       e.preventDefault();
       window.scrollTo(0, 0);
     });
+    window.addEventListener("resize", () => {
+      // We execute the same script as before
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    });
+    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+    let vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
   }, []);
   const displayInfoModal = () => {};
   return (
@@ -76,7 +85,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="relative flex h-full w-full touch-none flex-col items-center">
+      <main className="relative flex h-[calc(var(--vh,1vh)*100)] w-full touch-none flex-col items-center">
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
