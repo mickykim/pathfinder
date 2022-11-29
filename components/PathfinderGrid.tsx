@@ -605,7 +605,7 @@ const PathfinderGrid = ({
     <div
       id="canvas__wrapper"
       ref={canvasWrapper}
-      className="outline-3 h-full w-full outline outline-black"
+      className="outline-3 h-[-webkit-fill-available] h-full w-full outline outline-black"
       onTouchMove={handleTouch}
     >
       {gridElement}
