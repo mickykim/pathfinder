@@ -69,7 +69,7 @@ const Home: NextPage = () => {
   const displayInfoModal = () => {};
   return (
     // hide overflow scrolling for mobile
-    <div className=" fixed top-0 left-0 right-0 bottom-0 bg-slate-800">
+    <div className=" fixed top-0 left-0 right-0 bottom-0 h-full bg-slate-800">
       <Head>
         <title>Pathfinder</title>
         <meta name="description" content="Pathfinding algorithm visualizer" />
