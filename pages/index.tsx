@@ -53,7 +53,7 @@ const Home: NextPage = () => {
     console.log("A* set");
   };
   useEffect(() => {
-    window.addEventListener(
+    document.addEventListener(
       "contextmenu",
       function (e) {
         e.preventDefault();
@@ -65,13 +65,6 @@ const Home: NextPage = () => {
       e.preventDefault();
       window.scrollTo(0, 0);
     });
-    window.addEventListener("resize", () => {
-      window.location.reload();
-    });
-    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
-    let vh = window.innerHeight * 0.01;
-    // Then we set the value in the --vh custom property to the root of the document
-    document.documentElement.style.setProperty("--vh", `${vh}px`);
   }, []);
   const displayInfoModal = () => {};
   return (
@@ -83,7 +76,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="relative flex h-[calc(var(--vh,1vh)*100)] w-full touch-none flex-col items-center">
+      <main className="relative flex h-screen  h-[-webkit-fill-available] w-full touch-none flex-col items-center">
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
@@ -104,6 +97,8 @@ const Home: NextPage = () => {
         />
         {showInfo ? <InfoModal toggleInfo={toggleShowInfo} /> : <></>}
       </main>
+
+      <footer className="h-full bg-slate-700"></footer>
     </div>
   );
 };
