@@ -58,14 +58,11 @@ const PathfinderGrid = ({
    * @returns Grid data double array
    */
 
-  const FUNCTION_RATE_LIMITER = 100;
-
   const canvasWrapper = useRef<HTMLDivElement>(null);
   const [grid, setGrid] = useState<GridNode[][]>([]);
   const [startLocation, setStartLocation] = useState<string>("");
   const [targetLocation, setTargetLocation] = useState<string>("");
   const [frameDuration] = useState(5);
-  const [time, setTime] = useState(0);
   const timeline = useRef<GridNode[]>([]);
   const animationStarted = useRef<boolean>(false);
   const animationFinished = useRef<boolean>(false);
@@ -74,19 +71,19 @@ const PathfinderGrid = ({
   const unvisitedGrid = useRef<GridNode[][]>([]);
 
   const createGrid = useCallback((squareSize: number) => {
-    let tempGrid: GridNode[][] = [];
+    const tempGrid: GridNode[][] = [];
     for (
       let x = 0;
       x < Math.floor(document.documentElement.clientHeight / squareSize);
       x++
     ) {
-      let row: GridNode[] = [];
+      const row: GridNode[] = [];
       for (
         let y = 0;
         y < Math.floor(document.documentElement.clientWidth / squareSize);
         y++
       ) {
-        let gridNodeState: GridNode = {
+        const gridNodeState: GridNode = {
           start: false,
           target: false,
           visited: false,
@@ -112,7 +109,7 @@ const PathfinderGrid = ({
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      let updateNode = (event: React.MouseEvent<HTMLElement>) => {
+      const updateNode = (event: React.MouseEvent<HTMLElement>) => {
         if (animationStarted.current) return;
 
         const nodeLocation = event.currentTarget.id;
@@ -122,122 +119,53 @@ const PathfinderGrid = ({
           case "start":
             // Prevent from starting point to be moved after running algorithm
             if (animationFinished.current === true) return;
-
-            if (event.button === 0) {
-              if (startLocation !== "") {
-                const prevX = Number(startLocation.split("_")[1]);
-                const prevY = Number(startLocation.split("_")[2]);
-                setGrid((prevGrid) => {
-                  let updatedGrid = prevGrid.map((inner) => {
-                    return inner.slice();
-                  });
-                  let prevStartNode: GridNode = {
-                    ...updatedGrid[prevX][prevY],
+            setGrid((prevGrid) => {
+              const updatedGrid = prevGrid.map((inner) => {
+                return inner.map((node) => {
+                  return {
+                    ...node,
                     start: false,
-                    targetPath: false,
-
                     distance: Number.MAX_SAFE_INTEGER,
                   };
-                  let newNode: GridNode = {
-                    ...updatedGrid[x][y],
-                    start: true,
-                    distance: 0,
-                    target: false,
-                    blocked: false,
-                    targetPath: false,
-                  };
-
-                  unvisitedGrid.current[prevX][prevY] = {
-                    ...prevStartNode,
-                    visited: false,
-                  };
-                  unvisitedGrid.current[x][y] = {
-                    ...newNode,
-                    visited: false,
-                  };
-
-                  updatedGrid[prevX][prevY] = prevStartNode;
-                  updatedGrid[x][y] = newNode;
-                  return updatedGrid;
                 });
-              } else {
-                setGrid((prevGrid) => {
-                  let updatedGrid = prevGrid.map((inner) => {
-                    return inner.slice();
-                  });
-                  let newNode: GridNode = {
-                    ...updatedGrid[x][y],
-                    start: true,
-                    distance: 0,
-                    target: false,
-                    blocked: false,
-                  };
-                  unvisitedGrid.current[x][y] = { ...newNode };
+              });
+              const newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: true,
+                distance: 0,
+                target: false,
+                blocked: false,
+              };
+              updatedGrid[x][y] = newNode;
 
-                  updatedGrid[x][y] = newNode;
-                  return updatedGrid;
-                });
-              }
-
-              setStartLocation(() => nodeLocation);
-            }
+              return updatedGrid;
+            });
+            setStartLocation(() => nodeLocation);
             break;
 
           case "target":
-            if (targetLocation !== "") {
-              const prevX = Number(targetLocation.split("_")[1]);
-              const prevY = Number(targetLocation.split("_")[2]);
-
-              setGrid((prevGrid) => {
-                let updatedGrid = prevGrid.map((inner) => {
-                  return inner.slice();
+            setGrid((prevGrid) => {
+              const updatedGrid = prevGrid.map((inner) => {
+                return inner.map((node) => {
+                  return {
+                    ...node,
+                    target: false,
+                  };
                 });
-                let prevTargetNode: GridNode = {
-                  ...updatedGrid[prevX][prevY],
-                  target: false,
-                  distance: Number.MAX_SAFE_INTEGER,
-                };
-                let newNode: GridNode = {
-                  ...updatedGrid[x][y],
-                  start: false,
-                  target: true,
-                  distance: Number.MAX_SAFE_INTEGER,
-
-                  blocked: false,
-                };
-
-                unvisitedGrid.current[prevX][prevY] = {
-                  ...prevTargetNode,
-                  visited: false,
-                };
-                unvisitedGrid.current[x][y] = {
-                  ...newNode,
-                  visited: false,
-                };
-                updatedGrid[prevX][prevY] = prevTargetNode;
-                updatedGrid[x][y] = newNode;
-
-                return updatedGrid;
               });
-            } else {
-              setGrid((prevGrid) => {
-                let updatedGrid = prevGrid.map((inner) => {
-                  return inner.slice();
-                });
 
-                let newNode: GridNode = {
-                  ...updatedGrid[x][y],
-                  start: false,
-                  distance: Number.MAX_SAFE_INTEGER,
-                  target: true,
-                  blocked: false,
-                };
+              const newNode: GridNode = {
+                ...updatedGrid[x][y],
+                start: false,
+                distance: Number.MAX_SAFE_INTEGER,
+                target: true,
+                blocked: false,
+              };
 
-                unvisitedGrid.current[x][y] = { ...newNode, visited: false };
-                updatedGrid[x][y] = newNode;
-                return updatedGrid;
-              });
-            }
+              updatedGrid[x][y] = newNode;
+
+              return updatedGrid;
+            });
             setTargetLocation(() => nodeLocation);
             break;
 
@@ -245,18 +173,17 @@ const PathfinderGrid = ({
             // Prevent additional walls to be created after running algorithm
             if (animationFinished.current === true) return;
             setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
+              const updatedGrid = prevGrid.map((inner) => {
                 return inner.slice();
               });
 
-              let newNode: GridNode = {
+              const newNode: GridNode = {
                 ...updatedGrid[x][y],
                 start: false,
                 distance: Number.MAX_SAFE_INTEGER,
                 target: false,
                 blocked: true,
               };
-              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
               updatedGrid[x][y] = newNode;
               return updatedGrid;
@@ -270,18 +197,17 @@ const PathfinderGrid = ({
               setTargetLocation(() => "");
             }
             setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
+              const updatedGrid = prevGrid.map((inner) => {
                 return inner.slice();
               });
 
-              let newNode: GridNode = {
+              const newNode: GridNode = {
                 ...updatedGrid[x][y],
                 start: false,
                 target: false,
                 blocked: false,
                 targetPath: false,
               };
-              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
               updatedGrid[x][y] = newNode;
               return updatedGrid;
@@ -305,17 +231,11 @@ const PathfinderGrid = ({
    */
   const handleDrag = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
-      if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
-      let dragNode = (event: React.MouseEvent<HTMLElement>) => {
-        if (
-          !mouseDown.current ||
-          (activeTool !== "wall" && activeTool !== "eraser")
-        )
-          return; // Check that user is dragging
+      const dragNode = (event: React.MouseEvent<HTMLElement>) => {
+        if (!mouseDown.current) return; // Check that user is dragging
         handleClick(event);
       };
       dragNode(event);
-      setTime(() => Date.now());
     },
     [activeTool, handleClick]
   );
@@ -324,7 +244,6 @@ const PathfinderGrid = ({
    */
   const handleTouch = useCallback(
     (event: React.TouchEvent<HTMLElement>) => {
-      // if (Date.now() - time < FUNCTION_RATE_LIMITER) return;
       if (animationStarted.current) return;
       const nodeElement = document.elementFromPoint(
         event.touches[0].clientX,
@@ -342,82 +261,51 @@ const PathfinderGrid = ({
           // Prevent from starting point to be moved after running algorithm
           if (animationFinished.current === true) return;
           setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
+            const updatedGrid = prevGrid.map((inner) => {
               return inner.map((node) => {
-                return { ...node, start: false };
+                return {
+                  ...node,
+                  start: false,
+                  distance: Number.MAX_SAFE_INTEGER,
+                };
               });
             });
-            let newNode: GridNode = {
+            const newNode: GridNode = {
               ...updatedGrid[x][y],
               start: true,
               distance: 0,
               target: false,
               blocked: false,
             };
-            unvisitedGrid.current[x][y] = { ...newNode };
+            updatedGrid[x][y] = newNode;
+
+            return updatedGrid;
+          });
+          setStartLocation(() => nodeLocation);
+          break;
+
+        case "target":
+          setGrid((prevGrid) => {
+            const updatedGrid = prevGrid.map((inner) => {
+              return inner.map((node) => {
+                return {
+                  ...node,
+                  target: false,
+                };
+              });
+            });
+
+            const newNode: GridNode = {
+              ...updatedGrid[x][y],
+              start: false,
+              distance: Number.MAX_SAFE_INTEGER,
+              target: true,
+              blocked: false,
+            };
 
             updatedGrid[x][y] = newNode;
             return updatedGrid;
           });
-          setStartLocation(() => nodeLocation);
-
-          break;
-
-        case "target":
-          if (targetLocation !== "") {
-            const prevX = Number(targetLocation.split("_")[1]);
-            const prevY = Number(targetLocation.split("_")[2]);
-
-            setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
-                return inner.slice();
-              });
-              let prevTargetNode: GridNode = {
-                ...updatedGrid[prevX][prevY],
-                target: false,
-                distance: Number.MAX_SAFE_INTEGER,
-              };
-              let newNode: GridNode = {
-                ...updatedGrid[x][y],
-                start: false,
-                target: true,
-                distance: Number.MAX_SAFE_INTEGER,
-
-                blocked: false,
-              };
-
-              unvisitedGrid.current[prevX][prevY] = {
-                ...prevTargetNode,
-                visited: false,
-              };
-              unvisitedGrid.current[x][y] = {
-                ...newNode,
-                visited: false,
-              };
-              updatedGrid[prevX][prevY] = prevTargetNode;
-              updatedGrid[x][y] = newNode;
-
-              return updatedGrid;
-            });
-          } else {
-            setGrid((prevGrid) => {
-              let updatedGrid = prevGrid.map((inner) => {
-                return inner.slice();
-              });
-
-              let newNode: GridNode = {
-                ...updatedGrid[x][y],
-                start: false,
-                distance: Number.MAX_SAFE_INTEGER,
-                target: true,
-                blocked: false,
-              };
-
-              unvisitedGrid.current[x][y] = { ...newNode, visited: false };
-              updatedGrid[x][y] = newNode;
-              return updatedGrid;
-            });
-          }
           setTargetLocation(() => nodeLocation);
           break;
 
@@ -425,18 +313,17 @@ const PathfinderGrid = ({
           // Prevent additional walls to be created after running algorithm
           if (animationFinished.current === true) return;
           setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
+            const updatedGrid = prevGrid.map((inner) => {
               return inner.slice();
             });
 
-            let newNode: GridNode = {
+            const newNode: GridNode = {
               ...updatedGrid[x][y],
               start: false,
               distance: Number.MAX_SAFE_INTEGER,
               target: false,
               blocked: true,
             };
-            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
             updatedGrid[x][y] = newNode;
             return updatedGrid;
@@ -450,18 +337,17 @@ const PathfinderGrid = ({
             setTargetLocation(() => "");
           }
           setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
+            const updatedGrid = prevGrid.map((inner) => {
               return inner.slice();
             });
 
-            let newNode: GridNode = {
+            const newNode: GridNode = {
               ...updatedGrid[x][y],
               start: false,
               target: false,
               blocked: false,
               targetPath: false,
             };
-            unvisitedGrid.current[x][y] = { ...newNode, visited: false };
 
             updatedGrid[x][y] = newNode;
             return updatedGrid;
@@ -471,7 +357,6 @@ const PathfinderGrid = ({
         default:
           break;
       }
-      setTime(() => Date.now());
     },
     [activeTool, startLocation, targetLocation]
   );
@@ -526,59 +411,33 @@ const PathfinderGrid = ({
   const runDijkstra = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
     //Algorithm has been run at least once beforehand
-    if (
-      animationStarted.current === false &&
-      animationFinished.current === true
-    ) {
-      timeline.current = dijkstras(unvisitedGrid.current, startLocation);
-      animationFinished.current = false;
-      animationStarted.current = true;
-      setGrid(() =>
-        unvisitedGrid.current.map((inner) => {
-          return inner.map((node) => {
-            return { ...node };
-          });
-        })
-      );
-    } else {
-      animationStarted.current = true;
-      animationFinished.current = false;
-      timeline.current = dijkstras(grid, startLocation);
 
-      setGrid(() => [...grid]);
-    }
+    timeline.current = dijkstras(unvisitedGrid.current, startLocation);
+    setGrid(() =>
+      unvisitedGrid.current.map((inner) => {
+        return inner.map((node) => {
+          return { ...node };
+        });
+      })
+    );
   }, [grid, targetLocation, startLocation]);
 
   const runAstar = useCallback(() => {
     if (!grid || targetLocation == "" || startLocation == "") return;
-    //Algorithm has been run at least once beforehand
-    if (
-      animationStarted.current === false &&
-      animationFinished.current === true
-    ) {
-      timeline.current = astar(
-        unvisitedGrid.current,
-        startLocation,
-        targetLocation
-      );
-      animationStarted.current = true;
-      animationFinished.current = false;
-      // Replace grid with the unvisited grid to recalculate distances
-      setGrid(() =>
-        unvisitedGrid.current.map((inner) => {
-          return inner.map((node) => {
-            return { ...node };
-          });
-        })
-      );
-    } else {
-      // Flag set to indicate algorithm is running
-      animationStarted.current = true;
-      animationFinished.current = false;
-      timeline.current = astar(grid, startLocation, targetLocation);
 
-      setGrid(() => [...grid]);
-    }
+    timeline.current = astar(
+      unvisitedGrid.current,
+      startLocation,
+      targetLocation
+    );
+    // Replace grid with the unvisited grid to recalculate distances
+    setGrid(() =>
+      unvisitedGrid.current.map((inner) => {
+        return inner.map((node) => {
+          return { ...node };
+        });
+      })
+    );
   }, [grid, targetLocation, startLocation]);
 
   /**
@@ -616,23 +475,36 @@ const PathfinderGrid = ({
 
   useEffect(() => {
     if (animationStarted.current) return;
-    if (currentAlgorithm === "dijkstra") runDijkstra();
-
-    if (currentAlgorithm === "astar") runAstar();
+    unvisitedGrid.current = grid.map((inner) => {
+      return inner.map((node) => {
+        return { ...node };
+      });
+    });
+    switch (currentAlgorithm) {
+      case "dijkstra":
+        animationStarted.current = true;
+        runDijkstra();
+        break;
+      case "astar":
+        animationStarted.current = true;
+        runAstar();
+        break;
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runAlgorithm]);
 
   const createPath = useCallback(() => {
     if (!grid || !targetLocation) return;
-    let x = Number(targetLocation.split("_")[1]);
-    let y = Number(targetLocation.split("_")[2]);
-    let updatedGrid = grid.map((inner) => inner.slice());
+    const x = Number(targetLocation.split("_")[1]);
+    const y = Number(targetLocation.split("_")[2]);
+    const updatedGrid = grid.map((inner) => {
+      return inner.map((node) => {
+        return { ...node };
+      });
+    });
     let currentNode = updatedGrid[x][y];
 
-    // Set flag to algorithm is running AND has completed rendering visited nodes
-    animationStarted.current = true;
-    animationFinished.current = true;
     while (currentNode.shortestPath !== null) {
       const pathNode = { ...currentNode.shortestPath, targetPath: true };
       shortestPath.current.push(pathNode);
@@ -652,59 +524,80 @@ const PathfinderGrid = ({
     });
     const x = Number(targetLocation.split("_")[1]);
     const y = Number(targetLocation.split("_")[2]);
-    let currentNode = grid[x][y];
+    const currentNode = grid[x][y];
+
+    // Check if current node is a previously visited node
     if (currentNode.shortestPath !== null) {
+      animationStarted.current = true;
       createPath();
-    } else if (animationFinished.current) {
-      if (currentAlgorithm === "dijkstra") {
-        runDijkstra();
-      } else if (currentAlgorithm === "astar") {
-        runAstar();
+    }
+
+    // Recalculate shortest path since current node has not been calculated before.
+    else if (animationFinished.current) {
+      animationStarted.current = true;
+      animationFinished.current = false;
+
+      unvisitedGrid.current.forEach((inner) => {
+        inner.forEach((node) => {
+          node.target = false;
+        });
+      });
+      unvisitedGrid.current[x][y].target = true;
+      switch (currentAlgorithm) {
+        case "dijkstra":
+          runDijkstra();
+          break;
+        case "astar":
+          runAstar();
+          break;
       }
     }
   }, [targetLocation]);
 
-  //Run timeline and create shortest path from target.
+  /**
+   * Master loop animating algorithm calculation.
+   * Run timeline and create shortest path from target.
+   */
   useEffect(() => {
     // Check if algorithm was running and animation has finished displaying the changes.
+
     if (animationStarted.current && animationFinished.current) {
       if (shortestPath.current.length === 0) {
         animationStarted.current = false;
         return;
       }
-      let pathNode = shortestPath.current.pop();
-      setTimeout(
-        () =>
-          setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
-              return inner.slice();
-            });
-            if (pathNode === undefined) return prevGrid;
+      const pathNode = shortestPath.current.pop();
 
-            updatedGrid[pathNode.x][pathNode.y] = pathNode;
-            return updatedGrid;
-          }),
-        frameDuration * 2
-      );
+      setGrid((prevGrid) => {
+        const updatedGrid = prevGrid.map((inner) => {
+          return inner.map((node) => {
+            return { ...node };
+          });
+        });
+        if (pathNode === undefined) return prevGrid;
 
+        updatedGrid[pathNode.x][pathNode.y] = pathNode;
+        return updatedGrid;
+      });
       // Check if algorithm is running AND whether all visited nodes have been rendered.
-    } else if (animationStarted.current && timeline.current.length == 0) {
+    } else if (animationStarted.current && timeline.current.length === 0) {
+      animationFinished.current = true;
       createPath();
     } else if (animationStarted.current) {
-      let currentNode = timeline.current.shift();
-      setTimeout(
-        () =>
-          setGrid((prevGrid) => {
-            let updatedGrid = prevGrid.map((inner) => {
-              return inner.slice();
-            });
-            if (currentNode === undefined) return updatedGrid;
+      const currentNode = timeline.current.shift();
 
-            updatedGrid[currentNode.x][currentNode.y] = currentNode;
-            return updatedGrid;
-          }),
-        frameDuration
-      );
+      setGrid((prevGrid) => {
+        const updatedGrid = prevGrid.map((inner) => {
+          return inner.map((node) => {
+            return { ...node };
+          });
+        });
+
+        if (currentNode === undefined) return updatedGrid;
+
+        updatedGrid[currentNode.x][currentNode.y] = currentNode;
+        return updatedGrid;
+      });
     }
   }, [grid, createPath, frameDuration]);
 
