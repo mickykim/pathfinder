@@ -106,8 +106,6 @@ const Home: NextPage = () => {
         />
         {showInfo ? <InfoModal toggleInfo={toggleShowInfo} /> : <></>}
       </main>
-
-      <footer className="h-full bg-slate-700"></footer>
     </div>
   );
 };
