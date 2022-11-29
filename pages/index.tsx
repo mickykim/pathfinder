@@ -69,14 +69,14 @@ const Home: NextPage = () => {
   const displayInfoModal = () => {};
   return (
     // hide overflow scrolling for mobile
-    <div className=" fixed top-0 left-0 right-0 bottom-0 h-[-webkit-fill-available] h-screen bg-slate-800">
+    <div className=" fixed top-0 left-0 right-0 bottom-0 min-h-screen min-h-[-webkit-fill-available]  bg-slate-800">
       <Head>
         <title>Pathfinder</title>
         <meta name="description" content="Pathfinding algorithm visualizer" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="relative flex h-[-webkit-fill-available] h-screen touch-none flex-col items-center">
+      <main className="relative flex h-full touch-none flex-col items-center">
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
