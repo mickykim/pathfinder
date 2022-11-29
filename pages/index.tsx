@@ -53,7 +53,7 @@ const Home: NextPage = () => {
     console.log("A* set");
   };
   useEffect(() => {
-    document.addEventListener(
+    window.addEventListener(
       "contextmenu",
       function (e) {
         e.preventDefault();
@@ -66,9 +66,7 @@ const Home: NextPage = () => {
       window.scrollTo(0, 0);
     });
     window.addEventListener("resize", () => {
-      // We execute the same script as before
-      let vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
+      window.location.reload();
     });
     // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
     let vh = window.innerHeight * 0.01;
