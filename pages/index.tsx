@@ -76,7 +76,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="relative flex h-screen  h-[-webkit-fill-available] w-full touch-none flex-col items-center">
+      <main className="relative flex h-screen  min-h-[-webkit-fill-available] w-full touch-none flex-col items-center">
         <Toolbar
           toggleStartSelected={setStartTool}
           toggleTargetSelected={setTargetTool}
