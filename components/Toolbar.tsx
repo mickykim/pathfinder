@@ -85,7 +85,7 @@ const Toolbar = ({
   const resetButton = useRef<HTMLButtonElement>(null);
 
   return (
-    <div className="absolute bottom-6 z-10 flex justify-evenly rounded-lg border border-solid border-sky-300 border-opacity-25 bg-slate-700 p-1 text-white">
+    <div className="absolute bottom-12 z-10 flex justify-evenly rounded-lg border border-solid border-sky-300 border-opacity-25 bg-slate-700 p-1 text-white">
       <div className="">
         <button
           id="start"
