@@ -117,6 +117,12 @@ const PathfinderGrid = ({
         const y = Number(nodeLocation.split("_")[2]);
         switch (activeTool) {
           case "start":
+            if (startLocation !== "" && nodeLocation === startLocation) {
+              setStartLocation(() => "");
+            }
+            if (targetLocation !== "" && nodeLocation === targetLocation) {
+              setTargetLocation(() => "");
+            }
             // Prevent from starting point to be moved after running algorithm
             if (animationFinished.current === true) return;
             setGrid((prevGrid) => {
@@ -144,6 +150,12 @@ const PathfinderGrid = ({
             break;
 
           case "target":
+            if (startLocation !== "" && nodeLocation === startLocation) {
+              setStartLocation(() => "");
+            }
+            if (targetLocation !== "" && nodeLocation === targetLocation) {
+              setTargetLocation(() => "");
+            }
             setGrid((prevGrid) => {
               const updatedGrid = prevGrid.map((inner) => {
                 return inner.map((node) => {
@@ -161,7 +173,6 @@ const PathfinderGrid = ({
                 target: true,
                 blocked: false,
               };
-
               updatedGrid[x][y] = newNode;
 
               return updatedGrid;
@@ -170,6 +181,12 @@ const PathfinderGrid = ({
             break;
 
           case "wall":
+            if (startLocation !== "" && nodeLocation === startLocation) {
+              setStartLocation(() => "");
+            }
+            if (targetLocation !== "" && nodeLocation === targetLocation) {
+              setTargetLocation(() => "");
+            }
             // Prevent additional walls to be created after running algorithm
             if (animationFinished.current === true) return;
             setGrid((prevGrid) => {
@@ -475,6 +492,13 @@ const PathfinderGrid = ({
 
   useEffect(() => {
     if (animationStarted.current) return;
+    if (
+      startLocation === "" ||
+      targetLocation === "" ||
+      startLocation === targetLocation
+    )
+      return;
+
     unvisitedGrid.current = grid.map((inner) => {
       return inner.map((node) => {
         return { ...node };
@@ -515,7 +539,12 @@ const PathfinderGrid = ({
 
   // Recreate path ONLY if target location changes AND new location is in a visited node.
   useEffect(() => {
-    if (targetLocation == "") return;
+    if (
+      startLocation === "" ||
+      targetLocation === "" ||
+      startLocation === targetLocation
+    )
+      return;
 
     grid.forEach((inner) => {
       inner.forEach((node) => {
@@ -525,7 +554,7 @@ const PathfinderGrid = ({
     const x = Number(targetLocation.split("_")[1]);
     const y = Number(targetLocation.split("_")[2]);
     const currentNode = grid[x][y];
-
+    if (currentNode.start) return;
     // Check if current node is a previously visited node
     if (currentNode.shortestPath !== null) {
       animationStarted.current = true;
@@ -542,7 +571,11 @@ const PathfinderGrid = ({
           node.target = false;
         });
       });
+      unvisitedGrid.current[x][y].blocked = false;
+      unvisitedGrid.current[x][y].distance = Number.MAX_SAFE_INTEGER;
+
       unvisitedGrid.current[x][y].target = true;
+
       switch (currentAlgorithm) {
         case "dijkstra":
           runDijkstra();

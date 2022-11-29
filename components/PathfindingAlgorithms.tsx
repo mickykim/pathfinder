@@ -9,6 +9,7 @@ const heuristic = (x: number, y: number, targetX: number, targetY: number) => {
 };
 
 export const dijkstras = (grid: GridNode[][], startLocation: string) => {
+  if (startLocation === "") return [];
   const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
   const startX = Number(startLocation.split("_")[1]);
@@ -58,14 +59,21 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
         !updatedGrid[x + xOffsets[j]][y + yOffsets[j]].blocked &&
         !updatedGrid[x + xOffsets[j]][y + yOffsets[j]].visited
       ) {
-        if (updatedGrid[x][y].distance + 1 < updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance) {
+        if (
+          updatedGrid[x][y].distance + 1 <
+          updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance
+        ) {
           updatedGrid[x + xOffsets[j]][y + yOffsets[j]] = {
             ...updatedGrid[x + xOffsets[j]][y + yOffsets[j]],
             distance: updatedGrid[x][y].distance + 1,
             shortestPath: updatedGrid[x][y],
           };
-          const priority = updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance;
-          const priorityIndex = priorityQueue.findIndex(x + xOffsets[j], y + yOffsets[j]);
+          const priority =
+            updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance;
+          const priorityIndex = priorityQueue.findIndex(
+            x + xOffsets[j],
+            y + yOffsets[j]
+          );
           if (priorityIndex !== null) {
             priorityQueue.updatePriority(priorityIndex, priority);
           } else {
@@ -84,7 +92,18 @@ export const dijkstras = (grid: GridNode[][], startLocation: string) => {
   return timeline;
 };
 
-export const astar = (grid: GridNode[][], startLocation: string, targetLocation: string) => {
+export const astar = (
+  grid: GridNode[][],
+  startLocation: string,
+  targetLocation: string
+) => {
+  if (
+    startLocation === "" ||
+    targetLocation === "" ||
+    startLocation === targetLocation
+  )
+    return [];
+
   const timeline: GridNode[] = [];
   const updatedGrid = grid.map((inner) => inner.slice());
   const startX = Number(startLocation.split("_")[1]);
@@ -124,7 +143,10 @@ export const astar = (grid: GridNode[][], startLocation: string, targetLocation:
         !updatedGrid[x + xOffsets[j]][y + yOffsets[j]].blocked &&
         !updatedGrid[x + xOffsets[j]][y + yOffsets[j]].visited
       ) {
-        if (updatedGrid[x][y].distance + 1 < updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance) {
+        if (
+          updatedGrid[x][y].distance + 1 <
+          updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance
+        ) {
           updatedGrid[x + xOffsets[j]][y + yOffsets[j]] = {
             ...updatedGrid[x + xOffsets[j]][y + yOffsets[j]],
             distance: updatedGrid[x][y].distance + 1,
@@ -133,7 +155,10 @@ export const astar = (grid: GridNode[][], startLocation: string, targetLocation:
           const priority =
             updatedGrid[x + xOffsets[j]][y + yOffsets[j]].distance +
             heuristic(x + xOffsets[j], y + yOffsets[j], targetX, targetY);
-          const priorityIndex = priorityQueue.findIndex(x + xOffsets[j], y + yOffsets[j]);
+          const priorityIndex = priorityQueue.findIndex(
+            x + xOffsets[j],
+            y + yOffsets[j]
+          );
           if (priorityIndex !== null) {
             priorityQueue.updatePriority(priorityIndex, priority);
           } else {
