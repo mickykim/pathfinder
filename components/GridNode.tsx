@@ -116,7 +116,7 @@ const GridNode = ({
       <div
         key={nodeLocation}
         id={nodeLocation}
-        className={` h-full w-full animate-visited border border-slate-700 bg-yellow-600 transition-colors duration-75 ${hoverIcon}`}
+        className={` h-full w-full animate-visited border border-slate-700 bg-yellow-600 transition-colors duration-75 [-webkit-backface-visibility:hidden] ${hoverIcon}`}
         onMouseEnter={handleDrag}
         onMouseDown={handleClick}
         draggable="false"
