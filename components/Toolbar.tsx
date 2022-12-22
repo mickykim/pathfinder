@@ -89,7 +89,7 @@ const Toolbar = ({
       <div className="">
         <button
           id="start"
-          className="active rounded-xl p-2  md:p-4 [&:not(.active)]:hover:bg-slate-600"
+          className="active rounded-xl bg-sky-500 p-2  md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={startButton}
           aria-label="start flag"
