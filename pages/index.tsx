@@ -9,7 +9,7 @@ import Toolbar from "../components/Toolbar";
 import InfoModal from "../components/InfoModal";
 
 const Home: NextPage = () => {
-  const [activeTool, setActiveTool] = useState<string>("");
+  const [activeTool, setActiveTool] = useState<string>("start");
   const [reset, setReset] = useState<boolean>(false);
   const [runAlgorithm, setRunAlgorithm] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
