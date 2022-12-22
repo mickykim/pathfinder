@@ -92,6 +92,7 @@ const Toolbar = ({
           className="rounded-xl p-2 md:p-4  [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={startButton}
+          aria-label="start flag"
         >
           <FaFlag />
         </button>
@@ -100,6 +101,7 @@ const Toolbar = ({
           className=" rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={targetButton}
+          aria-label="target flag"
         >
           <FaFlagCheckered />
         </button>
@@ -108,6 +110,7 @@ const Toolbar = ({
           className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={wallButton}
+          aria-label="wall"
         >
           <GiBrickWall />
         </button>
@@ -116,6 +119,7 @@ const Toolbar = ({
           className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           onClick={setActiveTool}
           ref={eraserButton}
+          aria-label="eraser"
         >
           <FaEraser />
         </button>
@@ -128,6 +132,7 @@ const Toolbar = ({
               className="rounded-t-xl bg-slate-700 px-3 py-2 hover:bg-slate-600 md:px-6 md:py-4"
               onClick={toggleDijkstra}
               onTouchEnd={toggleDijkstra}
+              aria-label="dijkstra"
             >
               Dijkstra
             </button>
@@ -135,6 +140,7 @@ const Toolbar = ({
               className="w-full  rounded-b-xl bg-slate-700 px-6 py-4 hover:bg-slate-600"
               onClick={toggleAStar}
               onTouchEnd={toggleAStar}
+              aria-label="a star"
             >
               A*
             </button>
@@ -149,6 +155,7 @@ const Toolbar = ({
           className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           ref={runButton}
           onClick={toggleRun}
+          aria-label="run algorithm"
         >
           <FaPlay />
         </button>
@@ -157,6 +164,7 @@ const Toolbar = ({
           className="rounded-xl  p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600"
           ref={resetButton}
           onClick={toggleReset}
+          aria-label="reset grid"
         >
           <FaRedo />
         </button>
@@ -164,6 +172,7 @@ const Toolbar = ({
           className="rounded-xl p-2 md:p-4 [&:not(.active)]:hover:bg-slate-600 "
           ref={infoButton}
           onClick={toggleInfo}
+          aria-label="information"
         >
           <FaInfo />
         </button>
