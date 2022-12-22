@@ -55,13 +55,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     setStartTool();
     setDijkstrasAlgorithm();
-    document.addEventListener(
-      "contextmenu",
-      function (e) {
-        e.preventDefault();
-      },
-      false
-    );
+
     //Prevent mobile scrolling
     window.addEventListener("scroll", (e) => {
       e.preventDefault();
