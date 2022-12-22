@@ -9,11 +9,11 @@ import Toolbar from "../components/Toolbar";
 import InfoModal from "../components/InfoModal";
 
 const Home: NextPage = () => {
-  const [activeTool, setActiveTool] = useState<string>("start");
+  const [activeTool, setActiveTool] = useState<string>("");
   const [reset, setReset] = useState<boolean>(false);
   const [runAlgorithm, setRunAlgorithm] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
-  const [currentAlgorithm, setCurrentAlgorithm] = useState("dijkstra");
+  const [currentAlgorithm, setCurrentAlgorithm] = useState("");
 
   const setStartTool = () => {
     setActiveTool("start");
@@ -53,6 +53,8 @@ const Home: NextPage = () => {
     console.log("A* set");
   };
   useEffect(() => {
+    setStartTool();
+    setDijkstrasAlgorithm();
     document.addEventListener(
       "contextmenu",
       function (e) {
