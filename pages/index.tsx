@@ -55,7 +55,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     setStartTool();
     setDijkstrasAlgorithm();
-
+    console.log("Hello from the console!");
     //Prevent mobile scrolling
     window.addEventListener("scroll", (e) => {
       e.preventDefault();
